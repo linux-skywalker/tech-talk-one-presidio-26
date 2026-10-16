@@ -1,0 +1,9 @@
+path,step,seconds,exit_code
+trad,"create venv",0,1
+trad,"create venv (uv)",0,0
+trad,"install vllm (pulls torch+CUDA)",131,0
+trad,"install trl peft datasets accelerate",4,0
+trad,"fine-tune 3 epochs (smoke run, wall incl. wait)",303,0
+trad,"vLLM start to first answer (after fixing nvcc + memory)",75,0
+k8s,"phase2_install.sh (toolkit + docker runtime + k3s), warm",156,0
+k8s,"k3s cgroup v1 fix (config.yaml + restart)",60,0

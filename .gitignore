@@ -1,0 +1,9 @@
+.venv*/
+outputs/
+__pycache__/
+logs/*.log
+logs/*.pid
+logs/*_rc
+logs/*_start
+logs/*_ts
+logs/*_epoch
