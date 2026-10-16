@@ -3,22 +3,30 @@
 Talk: "Beyond kubectl apply: Elevating GPU Workflows with NVIDIA on Kubernetes".
 Machine: Windows PC, RTX 4070 (12 GB), WSL2 Ubuntu 22.04, Windows-supplied driver.
 
-## What works
-- **Traditional path, end to end.** LoRA fine-tune of Qwen2.5-1.5B-Instruct (800 examples, 900 steps, ~10 min) and vLLM serving of the base model plus the tuned adapter. GPU use: training 66-79% average, vLLM 81% under load.
-- **Failure behavior measured (traditional).** Training killed at step 362, resumed from checkpoint 350: 12 steps lost, 13 s to resume. Nothing restarted it automatically.
-- **GPU on Kubernetes.** k3s with the NVIDIA GPU Operator: `kubectl describe node` shows `nvidia.com/gpu: 1`, and a pod runs `nvidia-smi` and sees the RTX 4070. The Operator deployed the device plugin, GPU Feature Discovery, DCGM exporter, Node Feature Discovery and validator, all Running.
-- **Docker GPU access** via the NVIDIA Container Toolkit.
-- **Container images and manifests** written: two Dockerfiles, PVC, training Job, serving Deployment + Service, time-slicing config.
+## Status at a glance
 
-## Next
-Run the training Job and serving Deployment, pod-delete failure tests, time-slicing sharing test, RUNBOOK.md, results.md.
+| Piece | Status | Evidence |
+|---|---|---|
+| GPU visible in WSL2 | Working | nvidia-smi: RTX 4070, driver 615.78 |
+| Traditional fine-tune (LoRA, Qwen2.5-1.5B) | Working | 900 steps in about 10 min, GPU 66-79% avg |
+| Traditional inference (vLLM, base + tuned adapter) | Working | Answers differ between base and tuned; GPU 81% under load |
+| Traditional failure test | Working | Killed at step 362, resumed from step 350, 12 steps lost, 13 s to resume |
+| Docker GPU access (NVIDIA Container Toolkit) | Working | `docker run --gpus all nvidia-smi -L` lists the 4070 |
+| Single-node Kubernetes (k3s) | Working | Node Ready, v1.36.5 |
+| GPU in Kubernetes (GPU Operator) | Working | `kubectl describe node` shows `nvidia.com/gpu: 1`; a pod runs nvidia-smi |
+| Operator components | Working | Device plugin, GPU Feature Discovery, DCGM exporter, NFD, validator all Running |
+| Training and serving images | Built | Train 8.6 GB (260 s), serve 12.8 GB (332 s), pushed to a local registry |
+| Manifests | Written, not yet run | PVC, training Job, serving Deployment + Service, time-slicing config |
 
-## Caveats (for the talk)
-- WSL2 is not a supported target. It needed three workarounds: kubelet `fail-cgroupv1=false`, a manual PCI node label (Operator cannot detect the GPU on WSL2), and `mount --make-rshared /` after every WSL restart.
-- The Operator ran with `driver.enabled=false` and `toolkit.enabled=false`. Driver comes from Windows, toolkit from apt. Re-enabling the toolkit crashed (no /dev/nvidia* on WSL2). The driver container did not become Ready. So do not say the Operator installed the driver or toolkit here.
-- Baseline setup hit three problems: missing python3-venv, vLLM 0.3 memory too small (0.4 works), FlashInfer needing nvcc.
-- Tuned model loss 0.11 is overfit; this is a timing demo, not a quality claim.
-- Only WSL2 was tested; claims about native Linux are untested.
-- Setup times are warm (cached images and weights), not cold starts.
+## What is left
+Run the training Job and serving Deployment (this gives the cold-start timing), delete-pod failure tests, time-slicing sharing test, RUNBOOK.md, results.md.
 
-See logs/phase1_notes.md, logs/phase2a_notes.md, logs/steps.csv.
+## Caveats to keep in mind for the talk
+- WSL2 is not a supported target. It needed three workarounds: kubelet `fail-cgroupv1=false`, a manual PCI node label, and `mount --make-rshared /` after every WSL restart.
+- The Operator ran with its driver and toolkit installers off. The driver comes from Windows and the toolkit from apt. I tried turning them on: the toolkit crashed (no /dev/nvidia* on WSL2) and the driver container never became Ready. Do not say the Operator installed the driver or toolkit here.
+- The baseline hit three setup problems (missing python3-venv, vLLM memory 0.3 too small, FlashInfer needing nvcc). They are good demo material.
+- The tuned model's loss of 0.11 is overfit. This is a timing demo, not a quality claim.
+- Only WSL2 was tested. Native Linux behavior is untested.
+- Setup times so far are warm (cached images and weights), not cold starts.
+
+Details: logs/phase1_notes.md, logs/phase2a_notes.md, logs/steps.csv.
