@@ -111,3 +111,18 @@ sudo systemctl status k3s            # starts on boot via systemd
 ```bash
 kubectl delete -f k8s/serve-deployment.yaml -f k8s/train-job.yaml -f k8s/train-share-job.yaml
 ```
+
+## Reset between takes (important)
+Both training scripts auto-resume, so a second run on old outputs finishes in about 2 seconds ("done in 2s"). Reset first:
+```bash
+# traditional
+rm -rf outputs/trad_break
+# kubernetes (also gives a true cold start: fresh model download)
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+kubectl delete -f k8s/serve-deployment.yaml -f k8s/train-job.yaml -f k8s/train-share-job.yaml --ignore-not-found
+kubectl patch clusterpolicies.nvidia.com/cluster-policy --type json -p '[{"op":"remove","path":"/spec/devicePlugin/config"}]'   # time slicing off
+kubectl delete -f k8s/time-slicing-config.yaml --ignore-not-found
+kubectl delete pvc work --ignore-not-found
+kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'    # should print 1
+```
+Do not run the traditional and Kubernetes workloads at the same time: both want the same GPU.
