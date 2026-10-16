@@ -1,4 +1,4 @@
-# Progress summary (Phases 0 to 2a)
+# Progress summary (Phases 0 to 3)
 
 Talk: "Beyond kubectl apply: Elevating GPU Workflows with NVIDIA on Kubernetes".
 Machine: Windows PC, RTX 4070 (12 GB), WSL2 Ubuntu 22.04, Windows-supplied driver.
@@ -16,10 +16,13 @@ Machine: Windows PC, RTX 4070 (12 GB), WSL2 Ubuntu 22.04, Windows-supplied drive
 | GPU in Kubernetes (GPU Operator) | Working | `kubectl describe node` shows `nvidia.com/gpu: 1`; a pod runs nvidia-smi |
 | Operator components | Working | Device plugin, GPU Feature Discovery, DCGM exporter, NFD, validator all Running |
 | Training and serving images | Built | Train 8.6 GB (260 s), serve 12.8 GB (332 s), pushed to a local registry |
-| Manifests | Written, not yet run | PVC, training Job, serving Deployment + Service, time-slicing config |
+| Training Job on Kubernetes | Working | Checkpoints on a PVC, 900 steps in 13 min, pod delete resumed from checkpoint-75 |
+| Inference Deployment + Service | Working | First answer 126 s after apply; deleted pod replaced, answering in 103 s |
+| GPU sharing with time slicing | Working | Second pod Pending by default; with time slicing both ran, 10/10 requests answered |
+| RUNBOOK.md and results.md | Done | Comparison table with measured numbers |
 
 ## What is left
-Run the training Job and serving Deployment (this gives the cold-start timing), delete-pod failure tests, time-slicing sharing test, RUNBOOK.md, results.md.
+Rehearse the runbook on camera. Optional: repeat on a native Linux GPU machine to check the WSL2 workarounds are not needed there (untested).
 
 ## Caveats to keep in mind for the talk
 - WSL2 is not a supported target. It needed three workarounds: kubelet `fail-cgroupv1=false`, a manual PCI node label, and `mount --make-rshared /` after every WSL restart.
