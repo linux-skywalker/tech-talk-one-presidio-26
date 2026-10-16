@@ -9,3 +9,8 @@ k8s,"phase2_install.sh (toolkit + docker runtime + k3s), warm",156,0
 k8s,"k3s cgroup v1 fix (config.yaml + restart)",60,0
 k8s,"docker build train image",260,0
 k8s,"docker build serve image",332,0
+k8s,"apply training Job to pod Running (first run, includes image pull)",36,0
+k8s,"training Job total (13 min incl. one pod-delete and resume)",780,0
+k8s,"apply serve Deployment to first answer (image pull + vLLM start)",126,0
+k8s,"delete serve pod to answering again",103,0
+k8s,"delete train pod to training resumed (checkpoint-75)",98,0
