@@ -1,0 +1,8 @@
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir uv
+RUN uv pip install --system --no-cache torch==2.13.0 trl==1.14.2 peft==0.21.2 transformers==5.17.0 datasets accelerate
+WORKDIR /app
+COPY scripts/train.py /app/train.py
+ENV HF_HOME=/work/hf-cache PYTHONUNBUFFERED=1
+ENTRYPOINT ["python", "/app/train.py"]

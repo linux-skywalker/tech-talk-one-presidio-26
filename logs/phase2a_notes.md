@@ -10,3 +10,8 @@ The Operator did NOT install a driver or toolkit. Driver = Windows. Toolkit = ap
 3. Operator NFD cannot detect the GPU (no PCI device in WSL2): "No GPU node in the cluster". Fix: manual label feature.node.kubernetes.io/pci-10de.present=true.
 4. Operator pods failed: path "/" is mounted on "/" but it is not a shared or slave mount. Fix: sudo mount --make-rshared /  (NOT persistent, redo after every WSL restart).
 Do not claim: "supported", "Operator installed the driver", "just works on WSL2".
+
+## Retry with Operator toolkit and driver enabled (tested, reverted)
+- toolkit.enabled=true (with documented k3s containerd env vars): daemonset crashes. "unable to install toolkit: error creating device nodes: failed to create library: failed to create devices info: no NVIDIA devices found". WSL2 exposes /dev/dxg, not /dev/nvidia*. The installer has no flag to skip this. Dead end on WSL2.
+- driver.enabled=true: driver container pulled nvcr.io/nvidia/driver:595.91.07 and ran with --no-kernel-modules (it detected WSL2), installing userspace libs only. Never became Ready in ~5 min. Note it is a different version (595.91.07) than the Windows driver (615.78). Not completed, not pursued.
+- Reverted to driver.enabled=false, toolkit.enabled=false. GPU pod verified working again.

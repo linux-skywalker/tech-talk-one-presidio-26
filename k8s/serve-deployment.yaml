@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serve
+spec:
+  replicas: 1
+  strategy: {type: Recreate}   # one GPU: old pod must release it before the new one starts
+  selector:
+    matchLabels: {app: serve}
+  template:
+    metadata:
+      labels: {app: serve}
+    spec:
+      runtimeClassName: nvidia
+      containers:
+      - name: vllm
+        image: localhost:5000/gpu-serve:v1
+        env:
+        - {name: ADAPTER, value: /work/outputs/k8s/final}
+        - {name: GPU_UTIL, value: "0.4"}
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - {name: work, mountPath: /work}
+        readinessProbe:
+          httpGet: {path: /v1/models, port: 8000}
+          periodSeconds: 5
+        startupProbe:
+          httpGet: {path: /v1/models, port: 8000}
+          periodSeconds: 5
+          failureThreshold: 60
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: work
+        persistentVolumeClaim: {claimName: work}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve
+spec:
+  type: NodePort
+  selector: {app: serve}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30080}

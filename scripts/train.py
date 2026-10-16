@@ -23,7 +23,7 @@ def fmt(ex):
 ds = ds.map(fmt, remove_columns=ds.column_names)
 
 cfg = SFTConfig(
-    output_dir=a.out, num_train_epochs=a.epochs, per_device_train_batch_size=4,
+    output_dir=a.out, num_train_epochs=a.epochs, per_device_train_batch_size=int(os.environ.get("BATCH", 4)),
     gradient_accumulation_steps=2, learning_rate=2e-4, bf16=True, logging_steps=5,
     save_steps=a.save_steps, save_total_limit=2, max_length=a.max_len,
     gradient_checkpointing=True, report_to="none",
