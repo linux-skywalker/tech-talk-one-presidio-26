@@ -756,7 +756,7 @@
       }
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 22,
   "style": "dark",
   "tags": [],
@@ -832,7 +832,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {
