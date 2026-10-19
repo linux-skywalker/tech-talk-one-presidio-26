@@ -133,7 +133,9 @@ Do not run the traditional and Kubernetes workloads at the same time: both want 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update
 helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f k8s/monitoring-values.yaml
 scripts/import_dashboard.sh                                  # imports the NVIDIA DCGM dashboard
-# open http://localhost:30300/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard  (admin / admin)
+# WSL2 does not forward NodePorts to the Windows browser, use a real listener:
+kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80 --address 0.0.0.0 &
+# open http://localhost:3000/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard  (admin / admin), time range last 5 minutes, refresh 5s
 scripts/loadtest.sh 30080 Qwen/Qwen2.5-1.5B-Instruct 60 16  # generate load against the serve pod, watch the dashboard
 ```
 

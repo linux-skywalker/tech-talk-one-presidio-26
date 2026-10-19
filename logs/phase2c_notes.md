@@ -22,3 +22,7 @@ helm install to nvidia.com/gpu=1: 23 s with images already cached (includes the 
 3. Toolkit validator failed: nvidia-smi not found. Root cause: my earlier toolkit.enabled=true experiment (2026-10-16) left /usr/local/nvidia/toolkit on the host. k3s searches that path before /usr/bin when it detects the nvidia runtime, and on restart it switched the runtime to the half-installed copy (no working config). Found by reading /var/lib/rancher/k3s/agent/etc/containerd/config.toml.
 4. After removing /usr/local/nvidia and restarting k3s, the old pod sandboxes could not be stopped (binary gone). sudo k3s-killall.sh then sudo systemctl start k3s cleared them. GPU allocatable again in 48 s.
 Lesson for the talk: a failed Operator toolkit install can leave host files that bite later, and nothing warned about it. Do not run toolkit.enabled=true on a host with a working apt toolkit.
+
+## Dashboard showed no data (2026-10-19), two causes
+1. NodePort 30300 is not reachable from the Windows browser on WSL2 (iptables NodePort, no real listener). Fix: kubectl port-forward on 3000.
+2. Dashboard 12239 references its datasource by the legacy string "prometheus". The datasource name is "Prometheus" and its uid is "prometheus", so Grafana 13 resolved nothing and every panel was empty, although Prometheus had the data. Fix: rewrite datasource refs as {"type":"prometheus","uid":"prometheus"} (already applied to k8s/dashboards/nvidia-dcgm-12239.json) and re-import.
