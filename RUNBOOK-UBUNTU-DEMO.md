@@ -33,7 +33,7 @@ pkill -f '[v]llm serve'; rm -rf outputs/trad_break outputs/trad_kill
 kubectl delete -f k8s/serve-deployment.yaml -f k8s/train-job.yaml -f k8s/train-share-job.yaml --ignore-not-found
 kubectl delete pvc work --ignore-not-found                              # fresh checkpoints and a cold model download in the pod
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type json -p '[{"op":"remove","path":"/spec/devicePlugin/config"}]' 2>/dev/null   # time slicing off
-kubectl delete -f k8s/time-slicing-config.yaml --ignore-not-found
+kubectl delete -f k8s/time-slicing-config.yaml -f k8s/mps-config.yaml --ignore-not-found
 kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # must print 1 (wait up to 30 s)
 ```
 Do not run the `pkill` line as part of a longer line containing `scripts/train.py` text, it kills its own shell. The bracket form `'[v]llm serve'` is safe on its own.
@@ -101,7 +101,29 @@ until curl -s localhost:30081/v1/models | grep -q 0.5B; do sleep 2; done; echo s
 PORT=30080 scripts/ask.sh tuned "Give three tips for staying focused."
 PORT=30081 scripts/ask.sh Qwen/Qwen2.5-0.5B-Instruct "Give three tips for staying focused."
 ```
-Say plainly: time slicing has no memory isolation. The OOM of a second training Job is the proof, keep it as the caveat. Do not mention MIG.
+Say plainly: time slicing has no memory isolation. The OOM of a second training Job is the proof, keep it as the caveat.
+
+### 5b. Memory limits with MPS (not MIG), optional, about 4 minutes
+Run this with the serve pods deleted (`kubectl delete -f k8s/serve-small.yaml -f k8s/serve-deployment.yaml`) and time slicing off. Two small test pods share the GPU: "greedy" grabs memory until it fails, "steady" holds 3 GiB and then tries to grow by 2 GiB.
+```bash
+# control: time slicing, steady CANNOT grow
+kubectl apply -f k8s/time-slicing-config.yaml
+kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-config","default":"any"}}}}'
+until [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 4 ]; do sleep 3; done
+kubectl apply -f k8s/mps-memtest.yaml; sleep 110
+kubectl logs mem-greedy | grep -E "sees|stopped"; kubectl logs mem-steady | grep -E "sees|holds|GREW|NOT"   # steady: could NOT grow, OutOfMemoryError
+kubectl delete -f k8s/mps-memtest.yaml
+# MPS: each pod has its own memory limit, steady CAN grow
+kubectl apply -f k8s/mps-config.yaml
+kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"mps-config","default":"any"}}}}'
+until [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 2 ]; do sleep 3; done   # about 40 s
+kubectl apply -f k8s/mps-memtest.yaml; sleep 110
+kubectl logs mem-greedy | grep -E "sees|stopped"; kubectl logs mem-steady | grep -E "sees|holds|GREW|NOT"      # greedy stops at 5 GiB, steady GREW by 2 GiB: OK
+kubectl delete -f k8s/mps-memtest.yaml
+```
+Then switch sharing off (section 2, last four lines of the Kubernetes reset).
+
+Say plainly: this is MPS, not MIG. It limits memory per pod, but all clients share one fault domain, so it is not hardware isolation. Real isolation (MIG) needs an A100 or H100, which this RTX 4070 does not have (`nvidia-smi mig -lgip`: "No MIG-supported devices found"). Only memory limits were tested here, not compute shares or a crash in one client.
 
 DISK WARNING: the root disk has about 25 GB free and each GPU pod start used about 6 GB of it. The first sharing attempt hit kubelet DiskPressure and evicted every pod. Check `df -h /` before recording (keep 25 GB or more free). If pods show Evicted: `kubectl delete pod --field-selector=status.phase=Failed -A`, wait for DiskPressure=False (`kubectl describe node | grep DiskPressure`), and the Deployments recreate their pods.
 
@@ -112,6 +134,7 @@ DISK WARNING: the root disk has about 25 GB free and each GPU pod start used abo
 ## 7. Numbers to quote (this machine only, single runs, see `results-ubuntu-4070.md`)
 - Traditional: fine-tune 529 s, GPU 93% while active. vLLM ready in 48 s. Load test 1774 tok/s. Kill at step 362, last checkpoint 350, 12 steps lost, nothing restarted it.
 - Kubernetes: Operator install to `nvidia.com/gpu: 1` in 33 s with no workarounds. Train pod Running 23 s after apply. Pod deleted, replacement Running in 34 s and resumed from a checkpoint by itself.
+- MPS test: each pod sees 5.9 of 11.6 GiB, greedy stops at 5 GiB, steady grows 3 to 5 GiB. Under time slicing the same steady pod fails to grow (OutOfMemoryError).
 - Images: cold builds 258 s (train) and 601 s (serve).
 
 ## 8. If something goes wrong
@@ -128,7 +151,7 @@ A deleted GPU pod stays Terminating for up to about 60 s and holds the GPU, so i
 ## 9. Do not claim
 - The Operator installed the driver or the container toolkit (it did not here: both come from the host, the Operator ran with them off).
 - Kubernetes made training faster or raised GPU utilization.
-- Time slicing isolates memory, or anything about MIG.
+- Time slicing isolates memory, or that MPS is MIG (it is software memory limits, one shared fault domain), or anything about MIG results (not testable on this GPU).
 - Model quality (loss about 0.1 is overfit, timing demo only).
 - Native Ubuntu is faster than WSL2 because of Linux alone (different driver, single runs).
 

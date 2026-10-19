@@ -1,5 +1,7 @@
 # EKS variants (untested, prepared on WSL2)
 
+The full timed session plan (quota, ECR push, MIG, teardown) is `MIG-SESSION.md` in this folder.
+
 Differences from `k8s/`: ECR image names (replace ACCOUNT_ID and REGION), EBS gp3 StorageClass and PVC, LoadBalancer Service instead of NodePort.
 Before applying:
 1. Cluster with an EKS accelerated AMI node group (Amazon Linux 2023 NVIDIA). The AMI ships the driver and toolkit.

@@ -32,7 +32,7 @@ Add `--set driver.enabled=false` if the host driver is already installed. Skip t
 - vLLM: `GPU_UTIL=0.3` fits easily now; set 0.15 to 0.3 to leave room. Remove the FlashInfer workaround only if `nvcc` is present.
 - Training: raise `BATCH` (e.g. 16) and shorten `EPOCHS` so a run is still about 10 minutes; check `nvidia-smi` shows it is actually using the card.
 - Time slicing: there is room for both workloads, so the sharing story is about scheduling, not memory pressure. Time slicing still has no memory isolation.
-- H100 supports MIG, which does give real isolation and is the natural next slide. Untested here. Do not claim it without running it.
+- H100 supports MIG, which does give real isolation and is the natural next slide. Untested here. Do not claim it without running it. The timed plan for EKS is `k8s/eks/MIG-SESSION.md`.
 
 ## Images and portability
 - The images use a local registry (`localhost:5000`). On the VM either rebuild there (about 10 minutes) or push to a real registry and change the image names in `k8s/*.yaml`. Record which one you did, and how long it took: this is your portability number.
