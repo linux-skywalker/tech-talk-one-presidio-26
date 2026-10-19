@@ -52,7 +52,7 @@ The Operator ran with `driver.enabled=false` and `toolkit.enabled=false` for all
 | Grafana NodePort 30300 from the host | HTTP 200, dashboard panels show live data in the browser (confirmed by the user, no screenshot taken) | not reachable, port-forward needed |
 | Training Job: apply to pod Running | 23 s | 36 s |
 | Training Job, 900 steps incl. one pod delete | 679 s (Job start to completion); resumed pod ran 750 steps at 2.03 steps/s | 13 min |
-| GPU utilization, training | 83% while active (sample includes the restart gap) | 70% avg |
+| GPU utilization, training (clean uninterrupted run) | 89.1% avg over the last 529 s (traditional 90.5%, same window rule). The earlier 83% figure included my pod delete and is superseded | 70% avg |
 | Training pod deleted, replacement Running | 34 s, resumed from checkpoint-150 by itself | 62 to 98 s delete to training |
 | Serve Deployment: apply to model answering | 101 s | 126 s |
 | Serve pod deleted, answering again | 81 s, no human | 103 to 107 s |
@@ -67,5 +67,17 @@ The Operator ran with `driver.enabled=false` and `toolkit.enabled=false` for all
 
 ### Caveats
 - Single runs on one machine, different driver and OS from the WSL2 numbers.
-- Time to first training step after a pod restart was not measured (only delete to pod Running), so it cannot be compared with WSL2's 62 to 98 s.
 - Not tested: MIG, a second node, a real cloud registry.
+
+## Closing the open comparisons (all single runs, this machine)
+
+| Comparison | Traditional | Kubernetes | Reading |
+|---|---|---|---|
+| Training speed and utilization, uninterrupted, same 529 s window rule | 1.704 steps/s, 90.5% avg util, loss 0.4461, peak 8.2 GB | 1.701 steps/s, 89.1% avg util, loss 0.4473, peak 8.5 GB | No difference. Kubernetes neither speeds up nor slows training. Dips to 0 to 30% in both are the checkpoint saves |
+| Serving throughput (16 clients, 60 s) | 1774 tok/s | 1773 tok/s | No difference |
+| Training killed or pod deleted | Dead until a human reruns it. Resume by hand finished the remaining steps in 325 s | Pod replaced automatically; first training step logged about 51 s after the delete (pod created about 9.5 s, Running 31.6 s, resume line 47.5 s). WSL2: 62 to 98 s | Kubernetes wins on not needing a human. Recovery is not instant: the old pod holds the GPU while it terminates |
+| Serving killed or pod deleted | `kill -9`: no process, no answer, nothing restarted it in 30+ s. Human restart then answered in 28 s (warm) | Pod deleted: answering again in 81 s, no human | Manual restart is faster once someone notices; Kubernetes removes the noticing. Detection time by a human is unbounded and was not measured |
+| Nothing to first serving, first time | about 13.3 min: venv 1 s + installs 109 s + fine-tune 639 s (cold download) + vLLM 48 s. Excludes `apt install python3-venv` and one failed vLLM attempt at 0.3 (not timed) | about 27.8 min: Operator 33 s + image builds 859 s (258 + 601) + training Job 676 s + serve Deployment 101 s. Excludes the sudo install of toolkit, Docker runtime and k3s (untimed here; 156 s on WSL2), the helm install, and the stub-recovery incident | First-time setup is about twice as long on Kubernetes, dominated by the one-time image builds (14 of the 28 min). This is not a Kubernetes advantage |
+| Second run of the same thing | Same commands again, 28 s to serve (warm), all flags remembered | `kubectl apply`: training pod Running in 23 s, serve answering in 101 s | Similar once everything exists. Kubernetes cost is paid once up front |
+
+What these results do not show: Growing (second node), Moving (another cloud or registry), MIG, the Operator installing a driver or toolkit on a clean host. Do not claim them.
