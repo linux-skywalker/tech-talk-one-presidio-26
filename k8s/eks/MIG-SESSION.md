@@ -1,5 +1,7 @@
 # EKS + H100 session plan: MIG, "Moving" and the same comparison (UNTESTED)
 
+Scripted version of this plan: `EKS-READY.md` and `scripts/eks/session.sh`. This file explains the reasoning.
+
 Goal: get the evidence this repo cannot produce on an RTX 4070. (1) MIG gives real memory isolation, (2) the same manifests run on a managed cloud (Moving), (3) which RTX-4070 workarounds disappear on EKS. Write results in `results-eks-h100.md`, never mixed with the 4070 tables. Log every step with `scripts/log_step.sh eks-h100 "<step>" -- <command>`.
 
 Everything below comes from NVIDIA's and AWS's docs or from what worked on the 4070. None of it has run on EKS. Items marked VERIFY are things I could not confirm.
