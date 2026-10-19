@@ -51,7 +51,8 @@ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml && kubectl get nodes     # wait for 
 sudo mount --make-rshared /
 # K4. GPU Operator (driver and toolkit installers OFF: driver is Windows, toolkit is apt)
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
-helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace --set driver.enabled=false --set toolkit.enabled=false
+helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace --set driver.enabled=false --set toolkit.enabled=false \
+  --set 'dcgmExporter.env[0].name=DCGM_EXPORTER_INTERVAL' --set-string 'dcgmExporter.env[0].value=1000'   # 1 s metrics, default is 30 s
 # K5. WSL2 workaround: Operator cannot detect the GPU (no PCI device), label the node by hand
 kubectl label node $(kubectl get nodes -o name | cut -d/ -f2) feature.node.kubernetes.io/pci-10de.present=true
 # K6. success check
@@ -126,3 +127,23 @@ kubectl delete pvc work --ignore-not-found
 kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'    # should print 1
 ```
 Do not run the traditional and Kubernetes workloads at the same time: both want the same GPU.
+
+## Monitoring (Grafana + DCGM)
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update
+helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f k8s/monitoring-values.yaml
+scripts/import_dashboard.sh                                  # imports the NVIDIA DCGM dashboard
+# open http://localhost:30300/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard  (admin / admin)
+scripts/loadtest.sh 30080 Qwen/Qwen2.5-1.5B-Instruct 60 16  # generate load against the serve pod, watch the dashboard
+```
+
+## If the GPU vanishes after a WSL restart (it did, 2026-10-19)
+```bash
+sudo mount --make-rshared /
+sudo systemctl restart k3s
+kubectl delete pod -n gpu-operator -l 'app in (nvidia-operator-validator,nvidia-device-plugin-daemonset,gpu-feature-discovery,nvidia-dcgm-exporter)'
+# pods stuck Terminating or Unknown: clear stale sandboxes
+sudo k3s-killall.sh && sudo systemctl start k3s
+kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'   # 1
+```
+Never run the Operator with toolkit.enabled=true on this WSL2 host: it leaves /usr/local/nvidia/toolkit behind and k3s later switches to that broken runtime.

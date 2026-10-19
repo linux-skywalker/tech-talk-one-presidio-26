@@ -14,7 +14,7 @@ Model: Qwen2.5-1.5B-Instruct, LoRA on 800 Alpaca examples, vLLM serving. Machine
 | **Time, second deploy of same thing** | Same commands again, no failures if flags are remembered | `kubectl apply`: 126 s to serving |
 | **Manual steps** | 10 commands, 3 of which failed | 12 steps (RUNBOOK K1 to K6, helm install, 3 image steps, 2 applies), 3 of them WSL2-only workarounds, 0 failed once the workarounds were known |
 | **GPU utilization, training** | 79% avg (84% when active) | 70% avg (77% when active). No meaningful speedup from Kubernetes, same GPU, same code |
-| **GPU utilization, serving** | 81% under load (vLLM alone) | Not separately measured under load; sharing run below |
+| **GPU utilization, serving** | 69% avg, 88% peak, 1433 tok/s (16 clients, 60 s) | 69% avg, 89% peak, 1475 tok/s, same test. No difference |
 | **Two workloads on one GPU** | Training (9.7 GB) plus vLLM (4.9 GB) cannot fit; would need to shrink by hand and run both yourself | Default: second pod stays Pending ("Insufficient nvidia.com/gpu"). With time slicing: both run, 10/10 inference requests answered during training, util 37% avg / 47% steady, memory peak 11.9 of 12.3 GB |
 | **Behavior on failure: training** | SIGKILL at step 362, resumed from step 350 by hand, 12 steps lost, 13 s to resume. Nothing noticed or restarted it. | Pod deleted at about step 75: replacement created automatically, resumed from checkpoint-75, 98 s from delete to training (about 60 s waiting for the old pod to release the GPU) |
 | **Behavior on failure: serving** | Process dies, stays dead until a human restarts it (my own wait loop sat 5 min on a dead server) | Pod deleted: Deployment replaced it, answering again in 103 s, no human |

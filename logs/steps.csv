@@ -14,3 +14,6 @@ k8s,"training Job total (13 min incl. one pod-delete and resume)",780,0
 k8s,"apply serve Deployment to first answer (image pull + vLLM start)",126,0
 k8s,"delete serve pod to answering again",103,0
 k8s,"delete train pod to training resumed (checkpoint-75)",98,0
+k8s,"Operator helm install to nvidia.com/gpu=1 (warm images, incl. manual label)",23,0
+k8s,"monitoring: helm install kube-prometheus-stack to Grafana up",63,0
+k8s,"recovery after WSL restart: mount fix + k3s restart + cleanup (leftover toolkit dir) + k3s-killall",1800,0
