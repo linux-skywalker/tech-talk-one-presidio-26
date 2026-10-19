@@ -49,7 +49,7 @@ The Operator ran with `driver.enabled=false` and `toolkit.enabled=false` for all
 | Operator helm install to `nvidia.com/gpu: 1` | 33 s, cold images, no workaround | 23 s warm, plus manual label and mount |
 | Image builds, cold | 258 s (train), 601 s (serve) | 260 s, 332 s (warm) |
 | Monitoring stack to Grafana up | 53 s | 63 s |
-| Grafana NodePort 30300 from the host | HTTP 200 (curl only, browser panels not confirmed) | not reachable, port-forward needed |
+| Grafana NodePort 30300 from the host | HTTP 200, dashboard panels show live data in the browser (confirmed by the user, no screenshot taken) | not reachable, port-forward needed |
 | Training Job: apply to pod Running | 23 s | 36 s |
 | Training Job, 900 steps incl. one pod delete | 679 s (Job start to completion); resumed pod ran 750 steps at 2.03 steps/s | 13 min |
 | GPU utilization, training | 83% while active (sample includes the restart gap) | 70% avg |
@@ -68,5 +68,4 @@ The Operator ran with `driver.enabled=false` and `toolkit.enabled=false` for all
 ### Caveats
 - Single runs on one machine, different driver and OS from the WSL2 numbers.
 - Time to first training step after a pod restart was not measured (only delete to pod Running), so it cannot be compared with WSL2's 62 to 98 s.
-- Grafana panels filling in was not confirmed in a browser.
 - Not tested: MIG, a second node, a real cloud registry.

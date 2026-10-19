@@ -107,7 +107,7 @@ DISK WARNING: the root disk has about 25 GB free and each GPU pod start used abo
 
 ## 6. Dashboards
 - k9s: `k9s -n default` (keys: `:pods`, `l` logs, `d` describe, `Ctrl+D` delete, `:q` quit). k9s shows CPU and memory, not GPU.
-- GPU: `watch -n1 nvidia-smi`, or Grafana `http://localhost:30300/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard` (admin / admin, last 5 minutes, refresh 5s). Panels filling in is NOT yet confirmed in a browser. Check before relying on it.
+- GPU: `watch -n1 nvidia-smi`, or Grafana `http://localhost:30300/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard` (admin / admin, last 5 minutes, refresh 5s). Panels filling in with live data was confirmed in a browser on this machine (2026-10-19). The dashboard opens with 5s refresh over the last 5 minutes. Idle shows about 16% (the desktop), so generate load to make it move.
 
 ## 7. Numbers to quote (this machine only, single runs, see `results-ubuntu-4070.md`)
 - Traditional: fine-tune 529 s, GPU 93% while active. vLLM ready in 48 s. Load test 1774 tok/s. Kill at step 362, last checkpoint 350, 12 steps lost, nothing restarted it.
