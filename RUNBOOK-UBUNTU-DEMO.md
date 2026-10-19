@@ -131,3 +131,10 @@ A deleted GPU pod stays Terminating for up to about 60 s and holds the GPU, so i
 - Time slicing isolates memory, or anything about MIG.
 - Model quality (loss about 0.1 is overfit, timing demo only).
 - Native Ubuntu is faster than WSL2 because of Linux alone (different driver, single runs).
+
+## 10. Never do this on this machine
+Do NOT run the GPU Operator with `toolkit.enabled=true`. On this k3s host it replaced the containerd config with a stub, the node went NotReady, and recovery needed sudo twice. If it ever happens (node NotReady, "cni plugin not initialized"):
+```bash
+sudo bash scripts/recover_after_toolkit_test.sh
+```
+Then check `kubectl get node`, `kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'`, and that `/usr/local/nvidia` does not exist. `driver.enabled=true` is harmless here (the Operator detects the host driver and installs nothing), but also shows nothing, skip it.
