@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Phase 2 system-wide installs. Run with: sudo bash scripts/phase2_install.sh
 # Changes: apt repo + nvidia-container-toolkit, /etc/docker/daemon.json (nvidia runtime), restarts docker, installs k3s (systemd service).
-# Does NOT install the NVIDIA GPU Operator or any driver. The driver is the Windows one.
+# Does NOT install the NVIDIA GPU Operator or any driver. The driver is the host driver (Windows on WSL2, native on Ubuntu).
 set -euo pipefail
 t0=$(date +%s)
 

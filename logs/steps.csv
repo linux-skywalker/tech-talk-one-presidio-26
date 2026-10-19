@@ -23,3 +23,8 @@ ubuntu-trad,"install training libs",3,0
 ubuntu-trad,"fine-tune 900 steps (cold model/dataset download)",639,0
 ubuntu-trad,"vllm serve start to ready, GPU_UTIL=0.4",48,0
 ubuntu-trad,"kill test: resume by hand to done (from checkpoint-350)",338,0
+ubuntu-k8s,"Operator helm install to nvidia.com/gpu=1 (no workarounds, images cold)",33,0
+ubuntu-k8s,"monitoring: helm install kube-prometheus-stack to Grafana up (cold)",53,0
+ubuntu-k8s,"docker build+push gpu-train (cold)",258,0
+ubuntu-k8s,"docker build+push gpu-serve (cold)",601,0
+ubuntu-k8s,"training pod delete to new pod Running (resumed from checkpoint-150)",34,0
