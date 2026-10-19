@@ -28,3 +28,8 @@ ubuntu-k8s,"monitoring: helm install kube-prometheus-stack to Grafana up (cold)"
 ubuntu-k8s,"docker build+push gpu-train (cold)",258,0
 ubuntu-k8s,"docker build+push gpu-serve (cold)",601,0
 ubuntu-k8s,"training pod delete to new pod Running (resumed from checkpoint-150)",34,0
+ubuntu-k8s,"train Job complete incl one pod delete + resume (Job startTime to completionTime)",679,0
+ubuntu-k8s,"serve Deployment apply to model listed (tuned adapter)",101,0
+ubuntu-k8s,"serve pod delete to answering again (no human)",81,0
+ubuntu-k8s,"sharing: time slicing enabled, allocatable 4 and 2nd pod scheduled in 9 s, but train-share OOM twice (CUDA out of memory, serve holds ~4.9 GB)",9,1
+ubuntu-k8s,"sharing with serve-small (0.5B): Pending, then time slicing, both serving; 1.5B 546 tok/s + 0.5B 1046 tok/s concurrently, peak 8.4 GB",0,0

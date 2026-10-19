@@ -87,18 +87,23 @@ until curl -s localhost:30080/v1/models | grep -q tuned; do sleep 2; done; echo 
 ```
 If the loop could hang, check the pod in another pane (`kubectl get pods`), do not trust the loop alone.
 
-## 5. Sharing demo (one GPU, two workloads) UNTESTED HERE
+## 5. Sharing demo (one GPU, two workloads)
+Use the small second model, not a second training Job: training next to the serve pod runs out of GPU memory (CUDA OOM, tested twice).
 ```bash
 # serve Deployment already running and holding the GPU
-kubectl apply -f k8s/train-share-job.yaml
-kubectl get pods                                                        # train-share stays Pending
-kubectl describe pod -l app=train-share | grep -A3 Events               # Insufficient nvidia.com/gpu
+kubectl apply -f k8s/serve-small.yaml                                   # Qwen2.5-0.5B on NodePort 30081
+kubectl get pods                                                        # serve-small stays Pending
+kubectl describe pod -l app=serve-small | grep -A3 Events               # Insufficient nvidia.com/gpu
 kubectl apply -f k8s/time-slicing-config.yaml
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-config","default":"any"}}}}'
-kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 4 (takes up to a minute)
-kubectl get pods                                                        # train-share Running next to serve
+kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 4
+until curl -s localhost:30081/v1/models | grep -q 0.5B; do sleep 2; done; echo small model up   # about 60 to 90 s
+PORT=30080 scripts/ask.sh tuned "Give three tips for staying focused."
+PORT=30081 scripts/ask.sh Qwen/Qwen2.5-0.5B-Instruct "Give three tips for staying focused."
 ```
-Say plainly: time slicing has no memory isolation (WSL2 peak was 11.9 of 12.3 GB). Do not mention MIG.
+Say plainly: time slicing has no memory isolation. The OOM of a second training Job is the proof, keep it as the caveat. Do not mention MIG.
+
+DISK WARNING: the root disk has about 25 GB free and each GPU pod start used about 6 GB of it. The first sharing attempt hit kubelet DiskPressure and evicted every pod. Check `df -h /` before recording (keep 25 GB or more free). If pods show Evicted: `kubectl delete pod --field-selector=status.phase=Failed -A`, wait for DiskPressure=False (`kubectl describe node | grep DiskPressure`), and the Deployments recreate their pods.
 
 ## 6. Dashboards
 - k9s: `k9s -n default` (keys: `:pods`, `l` logs, `d` describe, `Ctrl+D` delete, `:q` quit). k9s shows CPU and memory, not GPU.
