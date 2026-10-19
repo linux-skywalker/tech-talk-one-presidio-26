@@ -1,0 +1,49 @@
+# Two pods on one GPU. "greedy" allocates 1 GiB chunks until it fails and holds them. "steady" holds 3 GiB,
+# then at t=60 s tries to grow by 2 GiB. Under time slicing greedy has taken everything and steady fails.
+# Under MPS each pod has its own memory limit and steady can grow.
+apiVersion: v1
+kind: Pod
+metadata: {name: mem-steady, labels: {app: memtest}}
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+  - name: t
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      f, t = torch.cuda.mem_get_info(); print(f"steady sees free={f/2**30:.1f} total={t/2**30:.1f} GiB", flush=True)
+      x = torch.empty(3 * 2**30, dtype=torch.uint8, device="cuda"); print("steady holds 3 GiB", flush=True)
+      time.sleep(60)
+      try:
+          z = torch.empty(2 * 2**30, dtype=torch.uint8, device="cuda"); print("steady GREW by 2 GiB: OK", flush=True)
+      except Exception as e:
+          print(f"steady could NOT grow by 2 GiB: {type(e).__name__}", flush=True)
+      time.sleep(20)
+    resources: {limits: {nvidia.com/gpu: 1}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: mem-greedy, labels: {app: memtest}}
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+  - name: t
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      f, t = torch.cuda.mem_get_info(); print(f"greedy sees free={f/2**30:.1f} total={t/2**30:.1f} GiB", flush=True)
+      time.sleep(15)
+      held = []
+      try:
+          while True:
+              held.append(torch.empty(2**30, dtype=torch.uint8, device="cuda"))
+      except Exception as e:
+          print(f"greedy stopped at {len(held)} GiB: {type(e).__name__}", flush=True)
+      time.sleep(120)
+    resources: {limits: {nvidia.com/gpu: 1}}

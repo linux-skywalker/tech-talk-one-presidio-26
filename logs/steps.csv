@@ -38,3 +38,4 @@ ubuntu-k8s,"Operator toolkit.enabled=true: overwrote k3s containerd config with 
 ubuntu-k8s,"clean uninterrupted train Job, apply to complete (cold PVC and model download)",676,0
 ubuntu-k8s,"training pod delete to first training step logged after resume (checkpoint-325, from pod log timestamps, +-3 s)",51,0
 ubuntu-trad,"vllm kill -9: stayed dead 30+ s, nothing restarted it; manual restart to answering (warm)",28,0
+ubuntu-k8s,"MPS test: per-pod memory limit works on RTX 4070 (greedy stops at 5 GiB, steady grows 3 to 5 GiB); time slicing control: steady cannot grow",37,0

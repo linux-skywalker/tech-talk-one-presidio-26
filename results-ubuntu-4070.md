@@ -81,3 +81,21 @@ The Operator ran with `driver.enabled=false` and `toolkit.enabled=false` for all
 | Second run of the same thing | Same commands again, 28 s to serve (warm), all flags remembered | `kubectl apply`: training pod Running in 23 s, serve answering in 101 s | Similar once everything exists. Kubernetes cost is paid once up front |
 
 What these results do not show: Growing (second node), Moving (another cloud or registry), MIG, the Operator installing a driver or toolkit on a clean host. Do not claim them.
+
+## MPS test (software memory limits, NOT MIG)
+
+The RTX 4070 has no MIG (`nvidia-smi mig -lgip`: "No MIG-supported devices found"; MIG mode `N/A`). The closest feature that runs here is CUDA MPS through the Operator's device plugin (`k8s/mps-config.yaml`, 2 replicas). Test `k8s/mps-memtest.yaml`: a "greedy" pod allocates 1 GiB chunks until it fails and holds them; a "steady" pod holds 3 GiB and at t=60 s tries to grow by 2 GiB. Same pods, same GPU, 11.6 GiB total.
+
+| | Time slicing (4 replicas) | MPS (2 replicas) |
+|---|---|---|
+| Memory each pod sees | free 10.8 of 11.6 GiB (everything) | free 5.9 of 11.6 GiB (its own limit) |
+| Greedy pod stops at | 7 GiB (takes all that is left) | 5 GiB (its own limit) |
+| Steady pod grows 3 to 5 GiB | **Fails: OutOfMemoryError** | **Succeeds** |
+| Node advertises | `nvidia.com/gpu: 4`, strategy `time-slicing` | `nvidia.com/gpu: 2`, strategy `mps`, applied in 37 s |
+
+Reading: MPS gives per-pod memory limits that time slicing does not, so a greedy neighbour cannot starve another pod. Single run each.
+
+Limits, state plainly:
+- This is MPS, not MIG. Do not call it MIG or hardware isolation. MPS clients share one fault domain, so a crash in one client can affect the others (from NVIDIA's MPS design, not tested here).
+- Only memory limits were tested, not the compute (thread percentage) split, and not a crash in one client.
+- The Operator was returned to no-sharing afterwards (`nvidia.com/gpu: 1`).
