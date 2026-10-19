@@ -26,3 +26,6 @@ Lesson for the talk: a failed Operator toolkit install can leave host files that
 ## Dashboard showed no data (2026-10-19), two causes
 1. NodePort 30300 is not reachable from the Windows browser on WSL2 (iptables NodePort, no real listener). Fix: kubectl port-forward on 3000.
 2. Dashboard 12239 references its datasource by the legacy string "prometheus". The datasource name is "Prometheus" and its uid is "prometheus", so Grafana 13 resolved nothing and every panel was empty, although Prometheus had the data. Fix: rewrite datasource refs as {"type":"prometheus","uid":"prometheus"} (already applied to k8s/dashboards/nvidia-dcgm-12239.json) and re-import.
+
+## Dashboard still empty in the Windows browser (open item, not resolved on WSL2)
+Verified: Prometheus scrapes DCGM (target up), a query through Grafana's /api/ds/query returns GPU utilization, datasource refs fixed. Panels were still empty in the browser. Last change: variables `instance` and `gpu` now default to All (allValue ".*"), since `current` was empty and the panel filter could resolve to nothing. Not confirmed visually. Next step on Ubuntu: open the dashboard, click a panel, Inspect > Query, and read the error. Fallback: build a minimal 3-panel dashboard (util, memory, power) with plain Prometheus queries.
