@@ -99,3 +99,19 @@ Limits, state plainly:
 - This is MPS, not MIG. Do not call it MIG or hardware isolation. MPS clients share one fault domain, so a crash in one client can affect the others (from NVIDIA's MPS design, not tested here).
 - Only memory limits were tested, not the compute (thread percentage) split, and not a crash in one client.
 - The Operator was returned to no-sharing afterwards (`nvidia.com/gpu: 1`).
+
+## Full rehearsal (sharing skipped), 2026-10-19
+
+`scripts/rehearsal.sh` runs RUNBOOK-UBUNTU-DEMO.md sections 1 to 4 and 6 end to end with PASS or FAIL checks (log: `logs/rehearsal_ubuntu.log`). Result: 28 of 28 checks passed, 1441 s (24 min) in total, from a reset state, warm images and cached model.
+
+| Step | Time |
+|---|---|
+| Traditional: kill at step 362, last checkpoint 350, nothing restarted it, manual resume to done | 341 s |
+| Traditional: vLLM start to ready | 44 s |
+| Kubernetes: training pod Running after apply | 7 s |
+| Kubernetes: pod delete to replacement Running (resumed from checkpoint-150) | 32 s |
+| Kubernetes: serve apply to tuned model answering | 78 s |
+| Kubernetes: serve pod delete to answering | 77 s |
+
+These warm numbers (images already on the node) are lower than the first-run numbers above (pod Running 23 s, serve 101 s). Quote them as warm. One run.
+
