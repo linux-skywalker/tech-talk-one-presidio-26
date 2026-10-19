@@ -17,3 +17,9 @@ k8s,"delete train pod to training resumed (checkpoint-75)",98,0
 k8s,"Operator helm install to nvidia.com/gpu=1 (warm images, incl. manual label)",23,0
 k8s,"monitoring: helm install kube-prometheus-stack to Grafana up",63,0
 k8s,"recovery after WSL restart: mount fix + k3s restart + cleanup (leftover toolkit dir) + k3s-killall",1800,0
+ubuntu-trad,"uv venv python 3.10",1,0
+ubuntu-trad,"install vllm+torch (cold cache)",106,0
+ubuntu-trad,"install training libs",3,0
+ubuntu-trad,"fine-tune 900 steps (cold model/dataset download)",639,0
+ubuntu-trad,"vllm serve start to ready, GPU_UTIL=0.4",48,0
+ubuntu-trad,"kill test: resume by hand to done (from checkpoint-350)",338,0
