@@ -1,5 +1,7 @@
 # EKS + H100 branch (`eks-h100`): ready to run, nothing here has run on AWS
 
+**Status: the AWS run was cancelled because on-demand GPU capacity was not available. MIG is covered in theory in `MIG-THEORY.md`. Everything below stays prepared but untested.**
+
 **Read this first (checked against AWS docs):** AWS's [MIG on EKS page](https://docs.aws.eu/eks/latest/userguide/device-management-nvidia-mig.html) lists MIG only for 8-GPU sizes (p4d.24xlarge, p4de, p5.48xlarge, p5e/p5en, p6, g7/g7e). **p5.4xlarge is not in that table**, so whether MIG works on it is unconfirmed. The `probe` stage answers it in a few minutes with a read-only check (`nvidia-smi mig -lgip`) and stops the run if the answer is no, so a bad guess costs about an hour of p5.4xlarge, not a whole session. Fallback: `INSTANCE=p4d.24xlarge` (8 x A100, needs 96 vCPUs of quota and costs much more per hour; price not verified). Other AWS notes: EKS Auto Mode has no MIG; a MIG change needs a GPU reset (the Operator's MIG manager reboots the node, we set `WITH_REBOOT=true`); AWS's AL2023 procedure uses `mixed` strategy, ours defaults to `single` (`MIG_STRATEGY=mixed` is supported and rewrites the pods' resource name).
 
 Everything on this branch was written on an RTX 4070 machine, which cannot do MIG. The scripts reuse what worked there, but every AWS-specific line is untested. Items marked VERIFY are things I could not confirm. Read them before paying for anything.
