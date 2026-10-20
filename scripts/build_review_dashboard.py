@@ -78,7 +78,7 @@ text("Review: Kubernetes + NVIDIA for GPU workloads", """
 
 **What we proved**
 - **Self-healing:** a killed training job stays dead on the manual path; on Kubernetes it is training again in about 51 s with nobody involved. A killed server is back and answering in 77 to 81 s.
-- **Sharing:** one GPU, six models. GPU busy 10 to 14% alone, 68% shared. Latency about 2x higher, all six still answer under 0.4 s.
+- **Sharing:** one GPU, six models. GPU busy 38% for one model alone, 93% with six sharing the card (same traffic per model). All six answer in about 0.4 s.
 - **Visibility:** live GPU and pod metrics (this dashboard) come with the stack.
 - **No penalty:** speed and GPU utilization are the same as the manual way.
 
@@ -91,7 +91,7 @@ SIX = [
  ("Watching", "Check a terminal", "Live dashboards",
   "DCGM exporter, Prometheus and Grafana came up in 53 s: live GPU busy, memory, power, temperature, pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.", "Proven"),
  ("Sharing", "One job blocks the GPU", "Jobs share it",
-  "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 10 to 14% alone vs 68% shared, and all six still answered in under 0.4 s. MPS added per-pod memory limits.", "Proven"),
+  "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 38% for one model alone vs 93% with six sharing the card (same traffic per model), and all six answered in about 0.4 s. MPS added per-pod memory limits.", "Proven"),
  ("Failures", "Someone gets a message", "It restarts itself",
   "Training killed: by hand it stays dead (finished by a person in 325 s); on Kubernetes training again in about 51 s from its last checkpoint. Serving killed: by hand stays dead; on Kubernetes answering again in 77 to 81 s. A tiny-model pod: 72 s. Repeated in two full rehearsals (28 of 28 checks each).", "Proven"),
  ("Growing", "Rebuild a machine", "Add a machine",
@@ -155,12 +155,14 @@ bars("Serving throughput (tokens per second)", "Path,Tokens per second\nTraditio
 bars("First-time setup (minutes, sudo install excluded)", "Path,Minutes\nTraditional,13.3\nKubernetes,27.8", "m", 12, 6, 7)
 bars("Fine-tune run time (seconds)", "Path,Seconds\nTraditional,529\nKubernetes,529", "s", 18, 6, 7)
 y += 7
-bars("6 copies of a tiny model: GPU busy, light traffic (percent)", "Setup,Percent\n1 copy alone (10 to 14),12\n6 copies sharing,68", "percent", 0, 8, 7)
-bars("Same traffic: mean answer time (ms)", "Setup,Milliseconds\n1 copy alone,85\n6 copies sharing,188", "ms", 8, 8, 7)
+bars("GPU busy, same traffic per model (percent)", "Setup,Percent\n1 copy alone,38\n6 copies sharing,93", "percent", 0, 8, 7)
+bars("Same traffic: mean answer time (ms)", "Setup,Milliseconds\n1 copy alone,81\n6 copies sharing,396", "ms", 8, 8, 7)
 bars("Heavy load: total tokens per second", "Setup,Tokens per second\n1 copy,12814\n6 copies sharing,2474", "none", 16, 8, 7)
 y += 7
+table("GPU busy as traffic grows (SmolLM2-135M, 30 s per level, single runs)", "Traffic per model,One copy GPU busy,One copy req/s,One copy mean,Six sharing GPU busy,Six sharing total req/s,Six sharing mean\n" + "\n".join(",".join(r) for r in [['Light (1 client per model; pause 0.5 s)', '14%', '1.7', '81 ms', '49 to 71% (3 runs)', '8.2 to 8.4', '214 ms'], ['Moderate (1 client per model; pause 0.1 s)', '38%', '5.3', '81 ms', '93%', '11.9', '396 ms'], ['Busy (2 clients per model; pause 0.1 s)', '67%', '10.3', '88 ms', '93%', '19.0', '522 ms'], ['Saturated (4 clients per model; no pause)', '92%', '40.5', '94 ms', '93%', '41.9', '562 ms']]), 0, 24, 8)
+y += 8
 text("Honest notes", """
-- **Light traffic result:** sharing raised GPU busy from about 12% to 68% and doubled latency (85 ms to 177-197 ms mean, p95 99 ms to about 330 ms). Mean shown is the average of the six pods.
+- **Sharing result:** at the same traffic per model, GPU busy went from 38% (one copy alone) to 93% (six sharing) and mean answer time from 81 ms to 396 ms. GPU busy is DCGM utilization, not useful work: at saturation one copy alone delivers about the same total requests per second as six sharing (40.5 vs 41.9), so sharing adds room for several models, not throughput.
 - **Heavy load result:** six copies delivered about 5x less total throughput than one copy, because one tiny server already fills the card. Sharing helps when many models each get light traffic, not when one model is saturated.
 - **Equal speed:** utilization, throughput and training time did not differ between the two paths. Do not read the first-time setup bar as a Kubernetes win: it is the one-time cost.
 - **Recovery times** are from pod logs and polling (about +/- 3 s). Not tested: Growing, Moving, MIG, the Operator installing the driver or toolkit.

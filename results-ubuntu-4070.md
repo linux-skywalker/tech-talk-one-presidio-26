@@ -170,3 +170,18 @@ Six-pod StatefulSet (`k8s/serve-tiny.yaml`, per-pod ports in `k8s/serve-tiny-por
 | Serve pod delete to answering | 77 s | 77 s |
 
 Repeatability: the two runs agree within a few seconds on every step except vLLM start (34 vs 44 s). Report: `reports/review-report.html`; Grafana: `/d/gpu-review`.
+
+### GPU busy as traffic grows: one tiny copy alone vs six sharing (SmolLM2-135M, 30 s per level, single runs, RTX 4070)
+
+Same six-pod setup as above (`k8s/serve-tiny.yaml`, time slicing x8). `CLIENTS` clients per model, each sends a 64-token request then waits `PAUSE` s (`scripts/loadtest-light.sh`). GPU busy is DCGM utilization sampled every 2 s over the run. Raw output: `logs/sweep_raw.txt`.
+
+| Traffic per model | One copy: GPU busy, req/s, mean | Six sharing: GPU busy, total req/s, mean |
+|---|---|---|
+| Light (1 client, pause 0.5 s) | 14%, 1.7, 81 ms | 49 to 71% (3 runs: 68, 71, 49), 8.2 to 8.4, 214 ms |
+| Moderate (1 client, pause 0.1 s) | 38%, 5.3, 81 ms | 93% (2 runs), 11.9, 396 ms (p95 474) |
+| Busy (2 clients, pause 0.1 s) | 67%, 10.3, 88 ms | 93%, 19.0, 522 ms |
+| Saturated (4 clients, no pause) | 92%, 40.5, 94 ms | 93%, 41.9, 562 ms |
+
+- Six models sharing the card reach 93% GPU busy at moderate traffic; one model alone at the same per-model setting is 38% busy. The card stays at 93% as traffic grows, and answer time rises (396 to 562 ms mean).
+- GPU busy is not useful work. At saturation one copy alone delivers about the same total requests per second as six sharing (40.5 vs 41.9), so sharing adds no throughput there. At the moderate level the six models together completed 11.9 req/s while the card showed 93% busy, whereas one copy at 92% busy completed 40.5 req/s: time slicing pays switching cost. The honest benefit of sharing is fitting several different models on one card, not more work per card.
+- The lightest level varied between runs (49 to 71%) because of where the 2 s samples fell relative to the load; use the moderate level (93%, both sweeps) for a stable number.

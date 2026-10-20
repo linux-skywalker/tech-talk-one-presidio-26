@@ -65,13 +65,15 @@ def status(s):
     return f'<span class="badge {c}" style="min-width:5.5em">{s}</span>'
 
 
+SWEEP_ROWS = [['Light (1 client per model; pause 0.5 s)', '14%', '1.7', '81 ms', '49 to 71% (3 runs)', '8.2 to 8.4', '214 ms'], ['Moderate (1 client per model; pause 0.1 s)', '38%', '5.3', '81 ms', '93%', '11.9', '396 ms'], ['Busy (2 clients per model; pause 0.1 s)', '67%', '10.3', '88 ms', '93%', '19.0', '522 ms'], ['Saturated (4 clients per model; no pause)', '92%', '40.5', '94 ms', '93%', '41.9', '562 ms']]
+
 SIX = [
  ("Setting up", "By hand on every machine", "Set once, applied everywhere",
   "The same stack was set up on two different hosts: WSL2 on Windows and native Ubuntu. Same Helm install and the same manifests (0 changed lines in 4 files). On native Ubuntu the Operator found the GPU in 33 s with no workarounds (WSL2 needed 3). It runs on top of the host driver and toolkit. scripts/bootstrap.sh repeats the setup on another Ubuntu box (checked as a re-run here).", "Proven"),
  ("Watching", "Check a terminal", "Live dashboards",
   "DCGM exporter, Prometheus and Grafana came up in 53 s: live GPU busy, memory, power, temperature, pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.", "Proven"),
  ("Sharing", "One job blocks the GPU", "Jobs share it",
-  "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 10 to 14% alone vs 68% shared, and all six still answered in under 0.4 s. MPS added per-pod memory limits.", "Proven"),
+  "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 38% for one model alone vs 93% with six sharing the card (same traffic per model), and all six answered in about 0.4 s. MPS added per-pod memory limits.", "Proven"),
  ("Failures", "Someone gets a message", "It restarts itself",
   "Training killed: by hand it stays dead (finished by a person in 325 s); on Kubernetes training again in about 51 s from its last checkpoint. Serving killed: by hand stays dead; on Kubernetes answering again in 77 to 81 s. A tiny-model pod: 72 s. Repeated in two full rehearsals (28 of 28 checks each).", "Proven"),
  ("Growing", "Rebuild a machine", "Add a machine",
@@ -139,7 +141,7 @@ body = f"""
 <div class="kpis">
 <div class="kpi"><b>51 s</b><span>killed training job is training again, no person involved (manual: stays dead)</span></div>
 <div class="kpi"><b>77 to 81 s</b><span>killed server is answering again on Kubernetes, no person involved</span></div>
-<div class="kpi"><b>10% to 68%</b><span>GPU busy, one tiny model alone vs six sharing the card (light traffic)</span></div>
+<div class="kpi"><b>38% to 93%</b><span>GPU busy: one tiny model alone vs six models sharing the card (same traffic per model)</span></div>
 <div class="kpi"><b>Same</b><span>speed and GPU use as the manual way: 90.5% vs 89.1% busy, 1774 vs 1773 tok/s</span></div>
 </div>
 
@@ -163,8 +165,8 @@ body = f"""
  ["Second pod on a busy GPU", "Not applicable (no scheduler)", "Default: stays Pending. With time slicing: six tiny models ran on one card"],
 ])}
 <div class="grid">
-{bars("GPU busy, tiny model, light traffic", "%", [("1 copy alone (10 to 14)", 12), ("6 copies sharing", 68)], "Midpoint of the 10 to 14% measured for one copy.")}
-{bars("Mean answer time, same traffic", "ms", [("1 copy alone", 85), ("6 copies sharing", 188)], "Mean of the six pods (177 to 197 ms). p95 99 ms alone, 313 to 348 ms shared.")}
+{bars("GPU busy, same traffic per model", "%", [("1 copy alone", 38), ("6 copies sharing", 93)], "Per model: 1 client, pause 0.1 s. Six copies measured twice: 93% both times.")}
+{bars("Mean answer time, same traffic", "ms", [("1 copy alone", 81), ("6 copies sharing", 396)], "Mean over the six pods. p95 94 ms alone, 474 ms shared.")}
 </div>
 
 <h2>4. What was the same</h2>
@@ -182,6 +184,9 @@ body = f"""
  ["MPS (2 replicas)", "Limit per pod (5.9 of 11.6 GiB)", "Greedy pod stopped at 5 GiB; steady pod grew 3 to 5 GiB"],
  ["MIG", "Hardware partitions (NVIDIA docs)", "<b>Not tested.</b> The RTX 4070 has no MIG. See MIG-THEORY.md"],
 ])}
+<h3>GPU busy as traffic grows (SmolLM2-135M, 30 s per level, single runs)</h3>
+{table(["Traffic per model", "One copy: GPU busy", "req/s", "mean", "Six sharing: GPU busy", "total req/s", "mean"], SWEEP_ROWS)}
+<p class="note">GPU busy is NVIDIA DCGM's utilization: the share of time at least one kernel was running. It reaches 93% with six models at moderate traffic. It is not a measure of useful work: at saturation one copy alone already delivers the same total requests per second (40.5 vs 41.9), so sharing does not add throughput there. What sharing adds is room for several different models on one card.</p>
 <p class="note">Heavy load: six copies delivered about 5x less total throughput than one copy (2474 vs 12814 tok/s), because one tiny server already fills the card. Sharing helps when many models each get light traffic.</p>
 
 <h2>6. Honest limits</h2>
