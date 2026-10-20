@@ -139,3 +139,18 @@ Findings, stated plainly:
 - So the case for many tiny models is not speed. It is that several different models or tenants can share one card, get restarted by themselves, and sit behind one Service address.
 - The traditional way can also run several servers by hand. What we saw was the manual overhead (ports, memory fractions, a start order that must be found by trial) and that a failed one stays failed.
 - A single load generator run per row; no repeats. 1 failed request during the pod delete is real.
+
+### Light traffic: one tiny copy alone vs six sharing the card (SmolLM2-135M, single runs, RTX 4070)
+
+Six-pod StatefulSet (`k8s/serve-tiny.yaml`, per-pod ports in `k8s/serve-tiny-ports.yaml`), time slicing x8. Each pod gets light traffic from `scripts/loadtest-light.sh`: one client, a 64-token request about every 0.5 s, 30 s per run. "Alone" means the other five pods were running but idle. `serve-tiny-0` had 1 restart during the ordered start (cause not checked).
+
+| Run | Pods under load | Mean latency per pod | p95 latency per pod | Avg GPU util |
+|---|---|---|---|---|
+| A. pod 0 alone | 1 | 85 ms | 99 ms | 10% |
+| B. all six together | 6 | 177 to 197 ms | 313 to 348 ms | 68% |
+| C. pod 0 alone again | 1 | 84 ms | 99 ms | 14% |
+
+- Sharing the card made each copy's latency about 2.2x higher on average and about 3.3x at p95. Everyone still answered in well under a second, and all six got the same service (spread of 20 ms in the mean).
+- GPU busy went from 10 to 14% (one copy) to 68% (six copies) with the same per-copy traffic. That is the "less idle hardware" result, with a latency cost.
+- Memory: 8.8 GB of 12 GB with six copies loaded.
+- Not shown: any benefit from 6 cards vs 1 (not run, arithmetic only); heavier load (see the 5x throughput result above).
