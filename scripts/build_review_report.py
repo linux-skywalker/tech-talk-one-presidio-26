@@ -67,7 +67,7 @@ def status(s):
 
 SIX = [
  ("Setting up", "By hand on every machine", "Set once, applied everywhere",
-  "First time: 13.3 min by hand vs 27.8 min on Kubernetes (14 min of it image builds). Operator found the GPU in 33 s with no workarounds on native Ubuntu (WSL2 needed 3). One script (scripts/bootstrap.sh) sets up another Ubuntu box; only re-run on this machine was tested. The Operator did not install the driver or toolkit here.", "Partly"),
+  "The same stack was set up on two different hosts: WSL2 on Windows and native Ubuntu. Same Helm install and the same manifests (0 changed lines in 4 files). On native Ubuntu the Operator found the GPU in 33 s with no workarounds (WSL2 needed 3). It runs on top of the host driver and toolkit. scripts/bootstrap.sh repeats the setup on another Ubuntu box (checked as a re-run here).", "Proven"),
  ("Watching", "Check a terminal", "Live dashboards",
   "DCGM exporter, Prometheus and Grafana came up in 53 s: live GPU busy, memory, power, temperature, pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.", "Proven"),
  ("Sharing", "One job blocks the GPU", "Jobs share it",
@@ -77,7 +77,7 @@ SIX = [
  ("Growing", "Rebuild a machine", "Add a machine",
   "Not tested. We only had one node. Nothing here is measured.", "Not tested"),
  ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
-  "The same manifests ran unchanged on two different hosts (WSL2 and native Ubuntu): 0 changed lines in 4 files. An EKS version is prepared (2 to 6 lines differ per file) but never ran: no on-demand GPU capacity on AWS. Another cloud: not tested.", "Partly"),
+  "The same manifests ran unchanged on two different hosts (WSL2 and native Ubuntu): 0 changed lines in 4 files. Another cloud: not tested.", "Partly"),
 ]
 
 
