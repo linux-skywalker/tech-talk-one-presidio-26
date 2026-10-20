@@ -1,0 +1,16 @@
+# Read-only check: is this GPU MIG-capable? Prints GPU name, driver, current MIG mode and the MIG profiles the GPU offers.
+# On the RTX 4070 the last command prints "No MIG-supported devices found". Does not change any GPU setting.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mig-probe
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+  - name: smi
+    image: nvidia/cuda:12.4.1-base-ubuntu22.04
+    command: ["sh", "-c", "nvidia-smi --query-gpu=name,driver_version,mig.mode.current --format=csv; echo ---; nvidia-smi mig -lgip"]
+    resources:
+      limits:
+        nvidia.com/gpu: 1

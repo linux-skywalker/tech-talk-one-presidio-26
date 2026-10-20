@@ -3,17 +3,20 @@
 # usage:  REGION=us-east-1 AZ=us-east-1a bash scripts/eks/session.sh <stage>      (log with: ... 2>&1 | tee -a logs/eks_session.log)
 # stages: preflight   free checks at home, run BEFORE paying (quota, zone offering, ECR images, tools, dry run)
 #         cluster     create the one-node H100 cluster, check node, EBS, storage class
-#         operator    Operator with mig.strategy=single, driver and toolkit installers OFF, driver version check
+#         operator    Operator with mig.strategy=single (MIG_STRATEGY), driver and toolkit installers OFF, our MIG profiles, driver version check
+#         probe       read-only: is this GPU MIG-capable (nvidia-smi mig -lgip)? Stops `all` early if not, so you can tear down before spending more
 #         mig1g       apply MIG profile all-1g.10gb, verify slices, then run the memory test
 #         mig2g       apply all-2g.20gb, run the serve + train concurrency session, failure tests, load test
-#         all         preflight is NOT included. Runs cluster, operator, mig1g, mig2g and stops at the first failed stage
+#         all         preflight is NOT included. Runs cluster, operator, probe, mig1g, mig2g and stops at the first failed stage
 #         status      show nodes, pods, MIG labels
 #         teardown    delete the cluster and list leftovers (asks first, FORCE=1 skips the question)
-# env:    REGION (required), AZ (zone offering p5.4xlarge), CLUSTER (default gpu-talk), USE_LB=1 keeps the LoadBalancer Service
+# env:    REGION (required), AZ (zone offering the instance), CLUSTER (default gpu-talk), INSTANCE (default p5.4xlarge; AWS-documented MIG fallback: p4d.24xlarge),
+#         MIG_STRATEGY (single|mixed, default single; AWS's AL2023 page uses mixed), USE_LB=1 keeps the LoadBalancer Service
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 export PATH=$HOME/.local/bin:$PATH AWS_PAGER=""
 : "${REGION:?set REGION, e.g. REGION=us-east-1}"
-CLUSTER=${CLUSTER:-gpu-talk}
+CLUSTER=${CLUSTER:-gpu-talk}; INSTANCE=${INSTANCE:-p5.4xlarge}; MIG_STRATEGY=${MIG_STRATEGY:-single}
+case $INSTANCE in p5.4xlarge) VCPU=16;; p4d.24xlarge|p4de.24xlarge) VCPU=96;; p5.48xlarge|p5e.48xlarge|p5en.48xlarge) VCPU=192;; *) VCPU=0;; esac   # vCPUs the quota must allow (0 = unknown, check by hand)
 [ -f logs/.eks_env ] && . logs/.eks_env          # remembers NO_RUNTIMECLASS from an earlier stage
 PASS=0; FAIL=0; T0=$(date +%s)
 phase() { echo; echo "=== $* ($(date +%H:%M:%S), +$(( $(date +%s) - T0 ))s)"; }
@@ -23,7 +26,8 @@ check() { local d="$1"; shift; "$@" >/dev/null 2>&1; verdict $? "$d"; }
 step() { local d="$1"; shift; local t=$(date +%s); "$@"; local rc=$?; echo "eks-h100,\"$d\",$(( $(date +%s) - t )),$rc" >> logs/steps.csv; note "$d: $(( $(date +%s) - t )) s (rc=$rc)"; return $rc; }
 ACC=${ACC:-$(aws sts get-caller-identity --query Account --output text 2>/dev/null)}
 render() { # render <manifest>: fills ACCOUNT_ID, REGION, AZ; drops runtimeClassName if the cluster has none; ClusterIP instead of LoadBalancer
-  local out; out=$(sed -e "s/ACCOUNT_ID/${ACC:-ACCOUNT_ID}/g" -e "s/REGION/$REGION/g" -e "s/\"AZ\"/\"${AZ:-AZ}\"/" "$1")
+  local out; out=$(sed -e "s/ACCOUNT_ID/${ACC:-ACCOUNT_ID}/g" -e "s/REGION/$REGION/g" -e "s/\"AZ\"/\"${AZ:-AZ}\"/" -e "s/INSTANCE_TYPE/$INSTANCE/" "$1")
+  [ -n "${MIG_RES:-}" ] && out=$(printf '%s\n' "$out" | sed "s#nvidia.com/gpu: 1#$MIG_RES: 1#")   # MIG_STRATEGY=mixed: pods ask for the slice resource
   [ "${NO_RUNTIMECLASS:-0}" = 1 ] && out=$(printf '%s\n' "$out" | sed '/runtimeClassName/d')
   [ "${USE_LB:-0}" != 1 ] && out=$(printf '%s\n' "$out" | sed 's/type: LoadBalancer/type: ClusterIP/')
   printf '%s\n' "$out"
@@ -33,7 +37,7 @@ wait_for() { # wait_for <seconds> <description> <command...>
   local n=$1 d=$2; shift 2; for _ in $(seq 1 $(( n / 3 ))); do "$@" >/dev/null 2>&1 && return 0; sleep 3; done; return 1
 }
 node() { kubectl get nodes -o name | head -1 | cut -d/ -f2; }
-gpus() { kubectl get node "$(node)" -o jsonpath='{.status.allocatable.nvidia\.com/gpu}' 2>/dev/null; }
+gpus() { local r; r=$(echo "${MIG_RES:-nvidia.com/gpu}" | sed 's/\./\\./g'); kubectl get node "$(node)" -o jsonpath="{.status.allocatable.$r}" 2>/dev/null; }
 pf_start() { kubectl port-forward svc/serve 18000:8000 >/dev/null 2>&1 & echo $! > logs/.eks_pf.pid; sleep 3; }
 pf_stop() { [ -f logs/.eks_pf.pid ] && kill "$(cat logs/.eks_pf.pid)" 2>/dev/null; rm -f logs/.eks_pf.pid; }
 serve_models() { kubectl exec deploy/serve -- python -c 'import urllib.request as u; print(u.urlopen("http://localhost:8000/v1/models").read().decode())' 2>/dev/null; }
@@ -45,19 +49,21 @@ stage_preflight() {
   phase "preflight (free)"
   for t in aws eksctl kubectl helm jq docker curl; do check "tool installed: $t" command -v $t; done
   check "AWS credentials work" aws sts get-caller-identity
-  local q; q=$(aws service-quotas get-service-quota --service-code ec2 --quota-code L-417A185B --region "$REGION" --query Quota.Value --output text 2>/dev/null)
-  if [ -z "$q" ] || [ "$q" = None ]; then note "could not read the P-instance vCPU quota (quota code L-417A185B is from memory, VERIFY it in the console)"
-  else verdict $([ "${q%.*}" -ge 16 ] && echo 0 || echo 1) "P-instance on-demand vCPU quota is $q (p5.4xlarge needs 16)"; fi
+  local q qn; q=$(aws service-quotas get-service-quota --service-code ec2 --quota-code L-417A185B --region "$REGION" --query Quota.Value --output text 2>/dev/null)
+  qn=$(aws service-quotas get-service-quota --service-code ec2 --quota-code L-417A185B --region "$REGION" --query Quota.QuotaName --output text 2>/dev/null)
+  if [ -z "$q" ] || [ "$q" = None ]; then note "could not read the P-instance vCPU quota (L-417A185B). Check Service Quotas in the console: 'Running On-Demand P instances'"
+  else note "quota L-417A185B is named: $qn"; verdict $([ "${q%.*}" -ge "$VCPU" ] && echo 0 || echo 1) "P-instance on-demand vCPU quota is $q ($INSTANCE needs $VCPU; 0 means unknown size, check by hand)"; fi
   if [ -z "${AZ:-}" ]; then
-    verdict 1 "AZ is not set. Zones offering p5.4xlarge in $REGION: $(aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=p5.4xlarge --region "$REGION" --query 'InstanceTypeOfferings[].Location' --output text 2>/dev/null)"
+    verdict 1 "AZ is not set. Zones offering $INSTANCE in $REGION: $(aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=$INSTANCE --region "$REGION" --query 'InstanceTypeOfferings[].Location' --output text 2>/dev/null)"
   else
-    check "p5.4xlarge offered in $AZ" bash -c "aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=p5.4xlarge Name=location,Values=$AZ --region $REGION --query 'InstanceTypeOfferings[0].InstanceType' --output text | grep -q p5.4xlarge"
+    check "$INSTANCE offered in $AZ" bash -c "aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=$INSTANCE Name=location,Values=$AZ --region $REGION --query 'InstanceTypeOfferings[0].InstanceType' --output text | grep -q $INSTANCE"
   fi
   for r in gpu-train gpu-serve; do check "ECR image $r:v1 exists" aws ecr describe-images --region "$REGION" --repository-name $r --image-ids imageTag=v1; done
   render k8s/eks/cluster.yaml > logs/.eks_cluster.yaml
   check "cluster.yaml renders and eksctl accepts it (dry run)" eksctl create cluster -f logs/.eks_cluster.yaml --dry-run
+  note "MIG on $INSTANCE: AWS's EKS MIG page lists only 8-GPU sizes (p4d, p5.48xlarge, ...). p5.4xlarge is NOT listed, so the probe stage decides. Fallback: INSTANCE=p4d.24xlarge (needs 96 vCPUs of quota)."
   note "if a check failed: quota -> request it (can take days). ECR -> REGION=$REGION scripts/eks_push_images.sh. Offering -> try another zone or region, or a Capacity Block."
-  note "cost reminder: p5.4xlarge about 6.88 USD/hr on-demand per price aggregators (VERIFY), plus EKS control plane and EBS. Tear down with: bash scripts/eks/session.sh teardown"
+  note "cost reminder: p5.4xlarge about 6.88 USD/hr on-demand per price aggregators (VERIFY, other sizes cost far more), plus EKS control plane and EBS. Tear down with: bash scripts/eks/session.sh teardown"
   summary
 }
 
@@ -70,17 +76,22 @@ stage_cluster() {
   aws eks update-kubeconfig --name "$CLUSTER" --region "$REGION" >/dev/null
   check "node Ready" wait_for 600 "node ready" bash -c 'kubectl get nodes --no-headers | grep -qw Ready'
   note "node: $(kubectl get nodes -o jsonpath='{.items[0].status.nodeInfo.osImage} | {.items[0].metadata.labels.node\.kubernetes\.io/instance-type}')"
-  check "instance type is p5.4xlarge" bash -c "kubectl get nodes -o jsonpath='{.items[0].metadata.labels.node\.kubernetes\.io/instance-type}' | grep -q p5.4xlarge"
+  check "instance type is $INSTANCE" bash -c "kubectl get nodes -o jsonpath='{.items[0].metadata.labels.node\.kubernetes\.io/instance-type}' | grep -q $INSTANCE"
+  check "node OS image is the NVIDIA accelerated AMI (driver present)" bash -c "kubectl get nodes -o jsonpath='{.items[0].status.nodeInfo.osImage}' | grep -qi amazon"
   check "EBS CSI controller running" wait_for 300 "ebs csi" bash -c 'kubectl get pods -n kube-system --no-headers | grep ebs-csi | grep -q Running'
   check "gp3 StorageClass applied" kubectl apply -f k8s/eks/storageclass.yaml
   summary
 }
 
 stage_operator() {
-  phase "GPU Operator, mig.strategy=single, driver and toolkit installers OFF"
+  phase "GPU Operator, mig.strategy=$MIG_STRATEGY, driver and toolkit installers OFF, our MIG profiles"
   helm repo add nvidia https://helm.ngc.nvidia.com/nvidia >/dev/null 2>&1; helm repo update >/dev/null 2>&1
+  kubectl create namespace gpu-operator --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  check "MIG profile ConfigMap applied" kubectl apply -f k8s/eks/mig-parted-config.yaml
   step "operator helm install" helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace \
-    --set mig.strategy=single --set driver.enabled=false --set toolkit.enabled=false \
+    --set mig.strategy=$MIG_STRATEGY --set driver.enabled=false --set toolkit.enabled=false \
+    --set migManager.config.name=custom-mig-parted-config --set migManager.config.create=false \
+    --set 'migManager.env[0].name=WITH_REBOOT' --set-string 'migManager.env[0].value=true' \
     --set 'dcgmExporter.env[0].name=DCGM_EXPORTER_INTERVAL' --set-string 'dcgmExporter.env[0].value=1000'
   verdict $? "helm install succeeded" || { summary; return 1; }
   t=$(date +%s)
@@ -101,17 +112,31 @@ stage_operator() {
   summary
 }
 
+stage_probe() {
+  phase "probe: is $INSTANCE MIG-capable? (read-only, changes nothing)"
+  kubectl delete pod mig-probe --ignore-not-found >/dev/null 2>&1
+  apply k8s/eks/mig-probe.yaml >/dev/null
+  wait_for 240 "probe pod finished" bash -c 'p=$(kubectl get pod mig-probe -o jsonpath="{.status.phase}"); [ "$p" = Succeeded ] || [ "$p" = Failed ]'
+  local out; out=$(kubectl logs mig-probe 2>&1); echo "$out" | sed 's/^/       /' | head -30
+  kubectl delete pod mig-probe --ignore-not-found >/dev/null 2>&1
+  echo "$out" | grep -q "No MIG-supported" && { verdict 1 "$INSTANCE reports NO MIG-supported devices"; note "That is the finding. Record it in results-eks-h100.md, then: bash scripts/eks/session.sh teardown. To try a documented MIG size: INSTANCE=p4d.24xlarge (needs 96 vCPUs quota)."; summary; return 1; }
+  echo "$out" | grep -qE "MIG [0-9]g\.[0-9]+gb" && verdict 0 "$INSTANCE lists MIG GPU instance profiles" || { verdict 1 "no MIG profiles listed (see output above)"; summary; return 1; }
+  note "record: GPU/driver/MIG mode lines above go into results-eks-h100.md"
+  summary
+}
+
 apply_mig() { # apply_mig <profile> <expected slice count>
   local p=$1 want=$2 n; n=$(node)
   check "no workload pods running (MIG change needs a free GPU)" bash -c '! kubectl get pods --no-headers 2>/dev/null | grep -q .'
-  kubectl get cm -n gpu-operator default-mig-parted-config -o yaml 2>/dev/null | grep -q "^    $p:" || note "profile $p not found in default-mig-parted-config (VERIFY names: kubectl get cm -n gpu-operator default-mig-parted-config -o yaml | grep -E '^    all-')"
+  kubectl get cm -n gpu-operator custom-mig-parted-config -o yaml 2>/dev/null | grep -q "^      $p:" || note "profile $p not found in custom-mig-parted-config (see k8s/eks/mig-parted-config.yaml)"
+  if [ "$MIG_STRATEGY" = mixed ]; then MIG_RES="nvidia.com/mig-${p#all-}"; export MIG_RES; sed -i '/^export MIG_RES=/d' logs/.eks_env 2>/dev/null; echo "export MIG_RES=$MIG_RES" >> logs/.eks_env; note "mixed strategy: slices are advertised as $MIG_RES"; fi
   local t=$(date +%s)
   kubectl label node "$n" nvidia.com/mig.config="$p" --overwrite >/dev/null
   local st=""; for _ in $(seq 1 200); do st=$(kubectl get node "$n" -o jsonpath='{.metadata.labels.nvidia\.com/mig\.config\.state}'); case "$st" in success|failed) break;; esac; sleep 3; done
   echo "eks-h100,\"MIG $p label to state=$st\",$(( $(date +%s) - t )),0" >> logs/steps.csv
   verdict $([ "$st" = success ] && echo 0 || echo 1) "MIG $p applied (state=$st) in $(( $(date +%s) - t )) s"
   if [ "$st" != success ]; then note "diagnose: kubectl logs -n gpu-operator ds/nvidia-mig-manager ; a reboot may be needed: aws ec2 reboot-instances --region $REGION --instance-ids <id>"; return 1; fi
-  check "node advertises $want slices" wait_for 180 "slices" bash -c "[ \"\$(kubectl get nodes -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')\" = $want ]"
+  check "node advertises $want slices" wait_for 300 "slices" bash -c "[ \"\$(kubectl get node $n -o jsonpath=\"{.status.allocatable.$(echo "${MIG_RES:-nvidia.com/gpu}" | sed 's/\./\\./g')}\")\" = $want ]"
   note "allocatable nvidia.com/gpu = $(gpus)"
   smi_in_cluster -L | grep -E "MIG|GPU" | head -10 | sed 's/^/       /' | cut -c1-110
 }
@@ -174,6 +199,7 @@ stage_teardown() {
   echo "available volumes:  $(aws ec2 describe-volumes --region "$REGION" --filters Name=status,Values=available --query 'Volumes[].VolumeId' --output text)"
   echo "load balancers:     $(aws elbv2 describe-load-balancers --region "$REGION" --query 'LoadBalancers[].LoadBalancerName' --output text 2>/dev/null)"
   echo "classic LBs:        $(aws elb describe-load-balancers --region "$REGION" --query 'LoadBalancerDescriptions[].LoadBalancerName' --output text 2>/dev/null)"
+  rm -f logs/.eks_env logs/.eks_cluster.yaml
   echo "ECR repos remain (cheap); delete with: aws ecr delete-repository --region $REGION --force --repository-name gpu-train (and gpu-serve)"
 }
 
@@ -183,8 +209,9 @@ case "${1:-}" in
   operator)  stage_operator ;;
   mig1g)     stage_mig1g ;;
   mig2g)     stage_mig2g ;;
+  probe)     stage_probe ;;
   status)    stage_status ;;
   teardown)  stage_teardown ;;
-  all)       for s in cluster operator mig1g mig2g; do "stage_$s" || { echo "STOPPED at stage $s. Fix it, then rerun that stage alone: bash scripts/eks/session.sh $s"; exit 1; }; done ;;
+  all)       for s in cluster operator probe mig1g mig2g; do "stage_$s" || { echo "STOPPED at stage $s. Fix it, then rerun that stage alone: bash scripts/eks/session.sh $s"; exit 1; }; done ;;
   *) sed -n '2,15p' "$0"; exit 2 ;;
 esac

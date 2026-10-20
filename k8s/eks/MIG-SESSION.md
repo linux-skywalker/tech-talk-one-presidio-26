@@ -1,5 +1,7 @@
 # EKS + H100 session plan: MIG, "Moving" and the same comparison (UNTESTED)
 
+Superseded in detail by `EKS-READY.md` and `scripts/eks/session.sh` (new: `probe` stage, `INSTANCE`, our own MIG profile ConfigMap, `WITH_REBOOT`). AWS documents MIG on EKS only for 8-GPU sizes; p5.4xlarge is unconfirmed and the probe decides. Where the manual commands below say `default-mig-parted-config`, use `custom-mig-parted-config`.
+
 Scripted version of this plan: `EKS-READY.md` and `scripts/eks/session.sh`. This file explains the reasoning.
 
 Goal: get the evidence this repo cannot produce on an RTX 4070. (1) MIG gives real memory isolation, (2) the same manifests run on a managed cloud (Moving), (3) which RTX-4070 workarounds disappear on EKS. Write results in `results-eks-h100.md`, never mixed with the 4070 tables. Log every step with `scripts/log_step.sh eks-h100 "<step>" -- <command>`.
