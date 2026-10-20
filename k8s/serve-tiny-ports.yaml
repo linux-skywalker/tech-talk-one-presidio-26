@@ -1,0 +1,60 @@
+# One NodePort per serve-tiny pod (30090-30095) so each copy can be tested alone. Used by scripts/loadtest-light.sh
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny-0
+spec:
+  type: NodePort
+  selector: {statefulset.kubernetes.io/pod-name: serve-tiny-0}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30090}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny-1
+spec:
+  type: NodePort
+  selector: {statefulset.kubernetes.io/pod-name: serve-tiny-1}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30091}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny-2
+spec:
+  type: NodePort
+  selector: {statefulset.kubernetes.io/pod-name: serve-tiny-2}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30092}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny-3
+spec:
+  type: NodePort
+  selector: {statefulset.kubernetes.io/pod-name: serve-tiny-3}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30093}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny-4
+spec:
+  type: NodePort
+  selector: {statefulset.kubernetes.io/pod-name: serve-tiny-4}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30094}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny-5
+spec:
+  type: NodePort
+  selector: {statefulset.kubernetes.io/pod-name: serve-tiny-5}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30095}

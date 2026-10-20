@@ -161,3 +161,6 @@ Do NOT run the GPU Operator with `toolkit.enabled=true`. On this k3s host it rep
 sudo bash scripts/recover_after_toolkit_test.sh
 ```
 Then check `kubectl get node`, `kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'`, and that `/usr/local/nvidia` does not exist. `driver.enabled=true` is harmless here (the Operator detects the host driver and installs nothing), but also shows nothing, skip it.
+
+## 11. Setting up another Ubuntu machine
+`bash scripts/bootstrap.sh check` (read-only), then `bash scripts/bootstrap.sh sudo` prints the one sudo block to run yourself, then `bash scripts/bootstrap.sh all` (user tools, Operator with installers OFF, Grafana, registry, image builds, models, verify). Each stage can be run alone and re-run. Verified only as a re-run on the machine it was written on (29 of 29 checks); the fresh install paths (pip, helm, image builds, Operator install) were not run from scratch. Write numbers for a new machine to its own branch and results file.

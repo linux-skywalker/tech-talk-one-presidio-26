@@ -115,3 +115,42 @@ Limits, state plainly:
 
 These warm numbers (images already on the node) are lower than the first-run numbers above (pod Running 23 s, serve 101 s). Quote them as warm. One run.
 
+
+## Many tiny models on one GPU (SmolLM2-135M-Instruct, single runs, RTX 4070)
+
+Model: HuggingFaceTB/SmolLM2-135M-Instruct, `GPU_UTIL=0.1`. One copy alone uses about 1.3 GB of GPU memory (ready in 41 s). Manifests: `k8s/serve-tiny.yaml` (StatefulSet, 6 replicas, NodePort 30082), `k8s/time-slicing-8.yaml`.
+
+| Step | Traditional (6 vLLM processes, ports 8101-8106) | Kubernetes (6 pods, time slicing x8) |
+|---|---|---|
+| Start all 6 at once | All 6 died: "No available memory for the cache blocks" (each copy counted the others' memory) | Deployment with 6 replicas: crash-looped and retried by itself; 4 of 6 ready after 10 min, not settled |
+| Start one at a time | 5 of 6 came up in 257 s; the 2nd failed with the same error, nothing retried it | StatefulSet, ordered start: 6 of 6 ready, 0 restarts, about 65 s per pod (about 7 min total) |
+| GPU memory with all up | 7.3 GB (5 copies) | 8.5 GB (6 copies) |
+| Kill one while serving | not tested here (earlier vLLM kill test: stays dead until a human restarts it) | pod delete: 39 of 40 requests OK during recovery, 1 failed, 6 of 6 ready again after 72 s |
+
+Throughput, 24 concurrent clients, 30 s, through the Service (`scripts/loadtest.sh`):
+
+| Setup | tokens/s | req/s | avg GPU util |
+|---|---|---|---|
+| 1 pod | 12814 | 50.3 | 94% |
+| 6 pods (time slicing) | 2474 | 9.7 | 93% |
+
+Findings, stated plainly:
+- Six time-sliced copies were about 5x SLOWER in total than one copy. One tiny vLLM server with batching already saturates the GPU. Packing more copies does not add throughput; time slicing adds context-switch cost.
+- So the case for many tiny models is not speed. It is that several different models or tenants can share one card, get restarted by themselves, and sit behind one Service address.
+- The traditional way can also run several servers by hand. What we saw was the manual overhead (ports, memory fractions, a start order that must be found by trial) and that a failed one stays failed.
+- A single load generator run per row; no repeats. 1 failed request during the pod delete is real.
+
+### Light traffic: one tiny copy alone vs six sharing the card (SmolLM2-135M, single runs, RTX 4070)
+
+Six-pod StatefulSet (`k8s/serve-tiny.yaml`, per-pod ports in `k8s/serve-tiny-ports.yaml`), time slicing x8. Each pod gets light traffic from `scripts/loadtest-light.sh`: one client, a 64-token request about every 0.5 s, 30 s per run. "Alone" means the other five pods were running but idle. `serve-tiny-0` had 1 restart during the ordered start (cause not checked).
+
+| Run | Pods under load | Mean latency per pod | p95 latency per pod | Avg GPU util |
+|---|---|---|---|---|
+| A. pod 0 alone | 1 | 85 ms | 99 ms | 10% |
+| B. all six together | 6 | 177 to 197 ms | 313 to 348 ms | 68% |
+| C. pod 0 alone again | 1 | 84 ms | 99 ms | 14% |
+
+- Sharing the card made each copy's latency about 2.2x higher on average and about 3.3x at p95. Everyone still answered in well under a second, and all six got the same service (spread of 20 ms in the mean).
+- GPU busy went from 10 to 14% (one copy) to 68% (six copies) with the same per-copy traffic. That is the "less idle hardware" result, with a latency cost.
+- Memory: 8.8 GB of 12 GB with six copies loaded.
+- Not shown: any benefit from 6 cards vs 1 (not run, arithmetic only); heavier load (see the 5x throughput result above).
