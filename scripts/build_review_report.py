@@ -60,6 +60,27 @@ def table(head, rows, cls=""):
     return "".join(t)
 
 
+def status(s):
+    c = {"Proven": "ok", "Partly": "part", "Not tested": "nt"}[s]
+    return f'<span class="badge {c}" style="min-width:5.5em">{s}</span>'
+
+
+SIX = [
+ ("Setting up", "By hand on every machine", "Set once, applied everywhere",
+  "First time: 13.3 min by hand vs 27.8 min on Kubernetes (14 min of it image builds). Operator found the GPU in 33 s with no workarounds on native Ubuntu (WSL2 needed 3). One script (scripts/bootstrap.sh) sets up another Ubuntu box; only re-run on this machine was tested. The Operator did not install the driver or toolkit here.", "Partly"),
+ ("Watching", "Check a terminal", "Live dashboards",
+  "DCGM exporter, Prometheus and Grafana came up in 53 s: live GPU busy, memory, power, temperature, pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.", "Proven"),
+ ("Sharing", "One job blocks the GPU", "Jobs share it",
+  "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card, GPU busy 10 to 14% alone vs 68% shared, answers about 2x slower (still under 0.4 s). MPS added per-pod memory limits. Limits: time slicing has no memory isolation (a second training job crashed twice); under heavy load six copies gave 5x less total throughput. MIG: theory only.", "Proven"),
+ ("Failures", "Someone gets a message", "It restarts itself",
+  "Training killed: by hand it stays dead (finished by a person in 325 s); on Kubernetes training again in about 51 s from its last checkpoint. Serving killed: by hand stays dead; on Kubernetes answering again in 77 to 81 s. A tiny-model pod: 72 s. Repeated in two full rehearsals (28 of 28 checks each).", "Proven"),
+ ("Growing", "Rebuild a machine", "Add a machine",
+  "Not tested. We only had one node. Nothing here is measured.", "Not tested"),
+ ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
+  "The same manifests ran unchanged on two different hosts (WSL2 and native Ubuntu): 0 changed lines in 4 files. An EKS version is prepared (2 to 6 lines differ per file) but never ran: no on-demand GPU capacity on AWS. Another cloud: not tested.", "Partly"),
+]
+
+
 def badge(s):
     return f'<span class="badge {"ok" if s == "PASS" else "no"}">{s}</span>'
 
@@ -101,7 +122,7 @@ css = """
 main{max-width:980px;margin:0 auto;padding:32px 16px 64px}h1{font-size:1.9rem;margin:0 0 4px}h2{margin:2.2rem 0 .6rem;font-size:1.3rem;border-bottom:1px solid var(--line);padding-bottom:6px}
 .sub{color:var(--dim);margin:0 0 20px}.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0}
 table{width:100%;border-collapse:collapse;font-size:.93rem;margin:10px 0}th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--dim);font-weight:600}
-.badge{display:inline-block;min-width:3.4em;text-align:center;font-weight:700;font-size:.78rem;padding:1px 8px;border-radius:99px;color:#fff}.badge.ok{background:var(--ok)}.badge.no{background:var(--no)}
+.badge{display:inline-block;min-width:3.4em;text-align:center;font-weight:700;font-size:.78rem;padding:1px 8px;border-radius:99px;color:#fff}.badge.ok{background:var(--ok)}.badge.part{background:#b7791f}.badge.nt{background:var(--b0)}.wide td:nth-child(3){min-width:260px}.badge.no{background:var(--no)}
 .dim{color:var(--dim)}.note{color:var(--dim);font-size:.85rem;margin:2px 0 0}figure{margin:12px 0;padding:0}figcaption{font-weight:600;margin-bottom:2px}
 svg{width:100%;height:auto;max-width:560px}.lab{fill:var(--fg);font-size:13px}.val{fill:var(--fg);font-size:13px;font-weight:600}.bar.b0{fill:var(--b0)}.bar.b1{fill:var(--b1)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px 24px}ul{padding-left:1.2rem}li{margin:4px 0}
@@ -122,7 +143,12 @@ body = f"""
 <div class="kpi"><b>Same</b><span>speed and GPU use as the manual way: 90.5% vs 89.1% busy, 1774 vs 1773 tok/s</span></div>
 </div>
 
-<h2>1. Full rehearsal</h2>
+
+<h2>1. The six-metric comparison</h2>
+<p class="sub">{sum(1 for r in SIX if r[4]=="Proven")} proven, {sum(1 for r in SIX if r[4]=="Partly")} partly, {sum(1 for r in SIX if r[4]=="Not tested")} not tested. Single runs on one RTX 4070 machine.</p>
+{table(["Metric", "Traditional (by hand)", "Kubernetes + NVIDIA", "What we measured", "Status"], [[f"<b>{e(m)}</b>", e(t), e(k), e(ev), status(st)] for m, t, k, ev, st in SIX], "wide")}
+
+<h2>2. Full rehearsal</h2>
 <div class="card"><b>{verdict}.</b><br>{e(run_line)}<br><span class="dim">{e(prev_line)}</span><br>
 <span class="dim">The rehearsal runs the demo end to end: reset, traditional fine-tune with a kill and manual resume, vLLM serving, the Kubernetes Job with a pod delete and automatic resume, the serve Deployment with a pod delete, and the Grafana checks. Sharing is not part of it.</span></div>
 <h3>Timings</h3>
@@ -130,7 +156,7 @@ body = f"""
 <h3>All checks</h3>
 {table(["Result", "Check", "Earlier run"], check_rows) if check_rows else ""}
 
-<h2>2. What Kubernetes gave us</h2>
+<h2>3. What Kubernetes gave us</h2>
 {table(["Event", "Traditional (by hand)", "Kubernetes"], [
  ["Training killed at step 362", "Stays dead. A person restarts it. Resume to done 325 s", "Replacement pod training again in about 51 s. No person"],
  ["Serving process killed", "Stays dead until restarted. Manual restart answered in 28 s (warm)", "Pod replaced and answering in 77 to 81 s. No person"],
@@ -141,7 +167,7 @@ body = f"""
 {bars("Mean answer time, same traffic", "ms", [("1 copy alone", 85), ("6 copies sharing", 188)], "Mean of the six pods (177 to 197 ms). p95 99 ms alone, 313 to 348 ms shared.")}
 </div>
 
-<h2>3. What was the same</h2>
+<h2>4. What was the same</h2>
 <div class="grid">
 {bars("GPU busy, equal window", "%", [("Traditional", 90.5), ("Kubernetes", 89.1)])}
 {bars("Serving throughput", "tok/s", [("Traditional", 1774), ("Kubernetes", 1773)])}
@@ -149,7 +175,7 @@ body = f"""
 {bars("First-time setup (sudo install excluded)", "min", [("Traditional", 13.3), ("Kubernetes", 27.8)], "One-time cost. About 14 of the 28 minutes are image builds.")}
 </div>
 
-<h2>4. Sharing one GPU</h2>
+<h2>5. Sharing one GPU</h2>
 {table(["Setup", "Memory each pod can use", "Result"], [
  ["Default scheduler", "1 GPU", "Second pod stays Pending (Insufficient nvidia.com/gpu)"],
  ["Time slicing", "No limit (each sees 10.8 GiB)", "Models run together; a steady pod could not grow (out of memory); a second training job crashed twice"],
@@ -158,16 +184,16 @@ body = f"""
 ])}
 <p class="note">Heavy load: six copies delivered about 5x less total throughput than one copy (2474 vs 12814 tok/s), because one tiny server already fills the card. Sharing helps when many models each get light traffic.</p>
 
-<h2>5. Honest limits</h2>
+<h2>6. Honest limits</h2>
 <ul>
 <li>Single runs on one machine. Recovery times come from pod logs and polling, about plus or minus 3 s.</li>
 <li>Kubernetes was <b>not faster</b> and did <b>not</b> raise GPU utilization by itself. The gain is unattended recovery, sharing and visibility.</li>
 <li>First-time setup was about twice as long on Kubernetes (image builds).</li>
 <li>The GPU Operator did not install the driver or the container toolkit here (both were turned off). Turning its toolkit installer on broke the node.</li>
-<li>Not tested: Growing (more nodes), Moving (another cloud), MIG, crash isolation between shared workloads.</li>
+<li>Not tested: Growing (more nodes), Moving to another cloud, MIG, crash isolation between shared workloads.</li>
 </ul>
 
-<h2>6. Where to look</h2>
+<h2>7. Where to look</h2>
 <ul>
 <li>Live Grafana dashboard: <code>http://localhost:30300/d/gpu-review</code> (admin / admin), plus the NVIDIA DCGM dashboard.</li>
 <li>Numbers and method: <code>results-ubuntu-4070.md</code>. Demo steps: <code>RUNBOOK-UBUNTU-DEMO.md</code>. MIG theory: <code>MIG-THEORY.md</code>.</li>

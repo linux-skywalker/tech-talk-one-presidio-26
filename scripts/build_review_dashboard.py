@@ -60,7 +60,7 @@ def ts(title, targets, unit, x, w, h, ymax=None, ymin=0):
 
 def table(title, csv, x, w, h):
     add({"type": "table", "title": title, "datasource": TD, "targets": [csv_target(csv)],
-         "fieldConfig": {"defaults": {"custom": {"align": "left", "cellOptions": {"type": "auto"}}}, "overrides": []},
+         "fieldConfig": {"defaults": {"custom": {"align": "left", "wrapText": True, "cellOptions": {"type": "auto"}}}, "overrides": []},
          "options": {"showHeader": True, "cellHeight": "md"}}, x, w, h)
 
 
@@ -84,6 +84,29 @@ text("Review: Kubernetes + NVIDIA for GPU workloads", """
 
 **What we did not prove:** Kubernetes is not faster, and the first-time setup took about twice as long (images). Growing (more nodes) and Moving (another cloud) were not tested. MIG is covered in theory only.
 """, 0, 24, 9)
+
+SIX = [
+ ("Setting up", "By hand on every machine", "Set once, applied everywhere",
+  "First time: 13.3 min by hand vs 27.8 min on Kubernetes (14 min of it image builds). Operator found the GPU in 33 s with no workarounds on native Ubuntu (WSL2 needed 3). One script (scripts/bootstrap.sh) sets up another Ubuntu box; only re-run on this machine was tested. The Operator did not install the driver or toolkit here.", "Partly"),
+ ("Watching", "Check a terminal", "Live dashboards",
+  "DCGM exporter, Prometheus and Grafana came up in 53 s: live GPU busy, memory, power, temperature, pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.", "Proven"),
+ ("Sharing", "One job blocks the GPU", "Jobs share it",
+  "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card, GPU busy 10 to 14% alone vs 68% shared, answers about 2x slower (still under 0.4 s). MPS added per-pod memory limits. Limits: time slicing has no memory isolation (a second training job crashed twice); under heavy load six copies gave 5x less total throughput. MIG: theory only.", "Proven"),
+ ("Failures", "Someone gets a message", "It restarts itself",
+  "Training killed: by hand it stays dead (finished by a person in 325 s); on Kubernetes training again in about 51 s from its last checkpoint. Serving killed: by hand stays dead; on Kubernetes answering again in 77 to 81 s. A tiny-model pod: 72 s. Repeated in two full rehearsals (28 of 28 checks each).", "Proven"),
+ ("Growing", "Rebuild a machine", "Add a machine",
+  "Not tested. We only had one node. Nothing here is measured.", "Not tested"),
+ ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
+  "The same manifests ran unchanged on two different hosts (WSL2 and native Ubuntu): 0 changed lines in 4 files. An EKS version is prepared (2 to 6 lines differ per file) but never ran: no on-demand GPU capacity on AWS. Another cloud: not tested.", "Partly"),
+]
+def cell(v):
+    return str(v).replace(",", "").replace("\n", " ")  # TestData CSV is comma separated, so cells cannot contain commas
+
+
+rows = "\n".join(",".join(cell(c) for c in r) for r in SIX)
+y += 0
+table("The six metrics: traditional vs Kubernetes + NVIDIA", "Metric,Traditional,Kubernetes + NVIDIA,What we measured,Status\n" + rows, 0, 24, 15)
+y += 15
 
 # ---------------------------------------------------------------- live GPU
 y += 9

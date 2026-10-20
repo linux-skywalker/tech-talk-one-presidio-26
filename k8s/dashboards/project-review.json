@@ -31,13 +31,55 @@
    }
   },
   {
+   "type": "table",
+   "title": "The six metrics: traditional vs Kubernetes + NVIDIA",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Metric,Traditional,Kubernetes + NVIDIA,What we measured,Status\nSetting up,By hand on every machine,Set once applied everywhere,First time: 13.3 min by hand vs 27.8 min on Kubernetes (14 min of it image builds). Operator found the GPU in 33 s with no workarounds on native Ubuntu (WSL2 needed 3). One script (scripts/bootstrap.sh) sets up another Ubuntu box; only re-run on this machine was tested. The Operator did not install the driver or toolkit here.,Partly\nWatching,Check a terminal,Live dashboards,DCGM exporter Prometheus and Grafana came up in 53 s: live GPU busy memory power temperature pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.,Proven\nSharing,One job blocks the GPU,Jobs share it,Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card GPU busy 10 to 14% alone vs 68% shared answers about 2x slower (still under 0.4 s). MPS added per-pod memory limits. Limits: time slicing has no memory isolation (a second training job crashed twice); under heavy load six copies gave 5x less total throughput. MIG: theory only.,Proven\nFailures,Someone gets a message,It restarts itself,Training killed: by hand it stays dead (finished by a person in 325 s); on Kubernetes training again in about 51 s from its last checkpoint. Serving killed: by hand stays dead; on Kubernetes answering again in 77 to 81 s. A tiny-model pod: 72 s. Repeated in two full rehearsals (28 of 28 checks each).,Proven\nGrowing,Rebuild a machine,Add a machine,Not tested. We only had one node. Nothing here is measured.,Not tested\nMoving,Rewrite for each cloud,Same setup runs anywhere,The same manifests ran unchanged on two different hosts (WSL2 and native Ubuntu): 0 changed lines in 4 files. An EKS version is prepared (2 to 6 lines differ per file) but never ran: no on-demand GPU capacity on AWS. Another cloud: not tested.,Partly"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "left",
+      "wrapText": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "md"
+   },
    "id": 2,
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 15
+   }
+  },
+  {
+   "id": 3,
    "type": "row",
    "title": "Live GPU (NVIDIA DCGM exporter)",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 9,
+    "y": 24,
     "w": 24,
     "h": 1
    },
@@ -95,10 +137,10 @@
      ]
     }
    },
-   "id": 3,
+   "id": 4,
    "gridPos": {
     "x": 0,
-    "y": 10,
+    "y": 25,
     "w": 4,
     "h": 4
    }
@@ -147,10 +189,10 @@
      ]
     }
    },
-   "id": 4,
+   "id": 5,
    "gridPos": {
     "x": 4,
-    "y": 10,
+    "y": 25,
     "w": 4,
     "h": 4
    }
@@ -200,10 +242,10 @@
      ]
     }
    },
-   "id": 5,
+   "id": 6,
    "gridPos": {
     "x": 8,
-    "y": 10,
+    "y": 25,
     "w": 4,
     "h": 4
    }
@@ -260,10 +302,10 @@
      ]
     }
    },
-   "id": 6,
+   "id": 7,
    "gridPos": {
     "x": 12,
-    "y": 10,
+    "y": 25,
     "w": 4,
     "h": 4
    }
@@ -312,10 +354,10 @@
      ]
     }
    },
-   "id": 7,
+   "id": 8,
    "gridPos": {
     "x": 16,
-    "y": 10,
+    "y": 25,
     "w": 4,
     "h": 4
    }
@@ -364,10 +406,10 @@
      ]
     }
    },
-   "id": 8,
+   "id": 9,
    "gridPos": {
     "x": 20,
-    "y": 10,
+    "y": 25,
     "w": 4,
     "h": 4
    }
@@ -410,10 +452,10 @@
      "placement": "bottom"
     }
    },
-   "id": 9,
+   "id": 10,
    "gridPos": {
     "x": 0,
-    "y": 14,
+    "y": 29,
     "w": 12,
     "h": 8
    }
@@ -466,22 +508,22 @@
      "placement": "bottom"
     }
    },
-   "id": 10,
+   "id": 11,
    "gridPos": {
     "x": 12,
-    "y": 14,
+    "y": 29,
     "w": 12,
     "h": 8
    }
   },
   {
-   "id": 11,
+   "id": 12,
    "type": "row",
    "title": "Kubernetes behavior (kube-state-metrics and kubelet)",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 22,
+    "y": 37,
     "w": 24,
     "h": 1
    },
@@ -524,10 +566,10 @@
      "placement": "bottom"
     }
    },
-   "id": 12,
+   "id": 13,
    "gridPos": {
     "x": 0,
-    "y": 23,
+    "y": 38,
     "w": 8,
     "h": 8
    }
@@ -569,10 +611,10 @@
      "placement": "bottom"
     }
    },
-   "id": 13,
+   "id": 14,
    "gridPos": {
     "x": 8,
-    "y": 23,
+    "y": 38,
     "w": 8,
     "h": 8
    }
@@ -614,22 +656,22 @@
      "placement": "bottom"
     }
    },
-   "id": 14,
+   "id": 15,
    "gridPos": {
     "x": 16,
-    "y": 23,
+    "y": 38,
     "w": 8,
     "h": 8
    }
   },
   {
-   "id": 15,
+   "id": 16,
    "type": "row",
    "title": "Measured results (RTX 4070, native Ubuntu, single runs)",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 31,
+    "y": 46,
     "w": 24,
     "h": 1
    },
@@ -657,6 +699,7 @@
     "defaults": {
      "custom": {
       "align": "left",
+      "wrapText": true,
       "cellOptions": {
        "type": "auto"
       }
@@ -668,10 +711,10 @@
     "showHeader": true,
     "cellHeight": "md"
    },
-   "id": 16,
+   "id": 17,
    "gridPos": {
     "x": 0,
-    "y": 32,
+    "y": 47,
     "w": 12,
     "h": 7
    }
@@ -698,6 +741,7 @@
     "defaults": {
      "custom": {
       "align": "left",
+      "wrapText": true,
       "cellOptions": {
        "type": "auto"
       }
@@ -709,10 +753,10 @@
     "showHeader": true,
     "cellHeight": "md"
    },
-   "id": 17,
+   "id": 18,
    "gridPos": {
     "x": 12,
-    "y": 32,
+    "y": 47,
     "w": 12,
     "h": 7
    }
@@ -739,6 +783,7 @@
     "defaults": {
      "custom": {
       "align": "left",
+      "wrapText": true,
       "cellOptions": {
        "type": "auto"
       }
@@ -750,10 +795,10 @@
     "showHeader": true,
     "cellHeight": "md"
    },
-   "id": 18,
+   "id": 19,
    "gridPos": {
     "x": 0,
-    "y": 32,
+    "y": 47,
     "w": 24,
     "h": 8
    }
@@ -798,10 +843,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 19,
+   "id": 20,
    "gridPos": {
     "x": 0,
-    "y": 47,
+    "y": 62,
     "w": 6,
     "h": 7
    }
@@ -846,10 +891,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 20,
+   "id": 21,
    "gridPos": {
     "x": 6,
-    "y": 47,
+    "y": 62,
     "w": 6,
     "h": 7
    }
@@ -894,10 +939,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 21,
+   "id": 22,
    "gridPos": {
     "x": 12,
-    "y": 47,
+    "y": 62,
     "w": 6,
     "h": 7
    }
@@ -942,10 +987,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 22,
+   "id": 23,
    "gridPos": {
     "x": 18,
-    "y": 47,
+    "y": 62,
     "w": 6,
     "h": 7
    }
@@ -990,10 +1035,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 23,
+   "id": 24,
    "gridPos": {
     "x": 0,
-    "y": 54,
+    "y": 69,
     "w": 8,
     "h": 7
    }
@@ -1038,10 +1083,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 24,
+   "id": 25,
    "gridPos": {
     "x": 8,
-    "y": 54,
+    "y": 69,
     "w": 8,
     "h": 7
    }
@@ -1086,10 +1131,10 @@
     },
     "barWidth": 0.7
    },
-   "id": 25,
+   "id": 26,
    "gridPos": {
     "x": 16,
-    "y": 54,
+    "y": 69,
     "w": 8,
     "h": 7
    }
@@ -1101,10 +1146,10 @@
     "mode": "markdown",
     "content": "\n- **Light traffic result:** sharing raised GPU busy from about 12% to 68% and doubled latency (85 ms to 177-197 ms mean, p95 99 ms to about 330 ms). Mean shown is the average of the six pods.\n- **Heavy load result:** six copies delivered about 5x less total throughput than one copy, because one tiny server already fills the card. Sharing helps when many models each get light traffic, not when one model is saturated.\n- **Equal speed:** utilization, throughput and training time did not differ between the two paths. Do not read the first-time setup bar as a Kubernetes win: it is the one-time cost.\n- **Recovery times** are from pod logs and polling (about +/- 3 s). Not tested: Growing, Moving, MIG, the Operator installing the driver or toolkit.\n- Source: `results-ubuntu-4070.md` in the repo, branch `ubuntu-4070`.\n"
    },
-   "id": 26,
+   "id": 27,
    "gridPos": {
     "x": 0,
-    "y": 61,
+    "y": 76,
     "w": 24,
     "h": 6
    }
