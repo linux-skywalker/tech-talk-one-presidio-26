@@ -1,7 +1,7 @@
 # kube-prometheus-stack, trimmed for a single node. Scrapes the Operator's DCGM exporter.
 alertmanager: {enabled: false}
 nodeExporter: {enabled: false}
-kubeStateMetrics: {enabled: false}
+kubeStateMetrics: {enabled: true}   # pod phase, restarts, node allocatable GPUs for the review dashboard
 defaultRules: {create: false}
 prometheus:
   prometheusSpec:

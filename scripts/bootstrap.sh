@@ -111,6 +111,7 @@ do_cluster() {
   for i in $(seq 1 60); do [ "$(curl -s -o /dev/null -w '%{http_code}' localhost:30300/login)" = 200 ] && break; sleep 3; done
   chk "Grafana answers on :30300" bash -c '[ "$(curl -s -o /dev/null -w "%{http_code}" localhost:30300/login)" = 200 ]'
   GRAFANA=localhost:30300 bash scripts/import_dashboard.sh >/dev/null 2>&1 && ok "DCGM dashboard imported" || warn "dashboard import failed: rerun scripts/import_dashboard.sh later"
+  bash scripts/import_review_dashboard.sh >/dev/null 2>&1 && ok "review dashboard imported (/d/gpu-review)" || warn "review dashboard import failed: rerun scripts/import_review_dashboard.sh later"
   stage "cluster: local image registry on :5000"
   if ! dk ps --format '{{.Names}}' | grep -qx registry; then timed dk run -d -p 5000:5000 --restart always --name registry registry:2 >/dev/null; else note "already running"; fi
   chk "registry answers" bash -c 'curl -s localhost:5000/v2/_catalog | grep -q repositories'

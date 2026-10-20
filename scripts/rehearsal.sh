@@ -31,7 +31,7 @@ check "root disk has 20 GB or more free" bash -c '[ "$(df --output=avail -BG / |
 
 phase "2. Reset"
 pkill -f '[v]llm serve'; rm -rf outputs/trad_break outputs/trad_kill
-kubectl delete -f k8s/serve-small.yaml -f k8s/serve-deployment.yaml -f k8s/train-job.yaml -f k8s/train-share-job.yaml --ignore-not-found >/dev/null 2>&1
+kubectl delete -f k8s/serve-tiny.yaml -f k8s/serve-small.yaml -f k8s/serve-deployment.yaml -f k8s/train-job.yaml -f k8s/train-share-job.yaml --ignore-not-found >/dev/null 2>&1
 kubectl delete pvc work --ignore-not-found >/dev/null 2>&1
 for i in $(seq 1 40); do gpu_free && break; sleep 3; done
 check "GPU idle after reset" gpu_free

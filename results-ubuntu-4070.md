@@ -154,3 +154,19 @@ Six-pod StatefulSet (`k8s/serve-tiny.yaml`, per-pod ports in `k8s/serve-tiny-por
 - GPU busy went from 10 to 14% (one copy) to 68% (six copies) with the same per-copy traffic. That is the "less idle hardware" result, with a latency cost.
 - Memory: 8.8 GB of 12 GB with six copies loaded.
 - Not shown: any benefit from 6 cards vs 1 (not run, arithmetic only); heavier load (see the 5x throughput result above).
+
+## Full rehearsal, second run (20 Oct 2026, RTX 4070, single run)
+
+`scripts/rehearsal.sh` (runbook sections 1-4 and 6, sharing skipped): **28 of 28 checks passed, 1448 s total** (earlier run: 28 of 28, 1441 s). Log: `logs/rehearsal_ubuntu_run2.log`. A first attempt of this run was discarded because a leftover `serve-tiny` pod from a dashboard test was still on the GPU; the rehearsal's reset step now also deletes `k8s/serve-tiny.yaml`.
+
+| Step | This run | Earlier run |
+|---|---|---|
+| Training killed at step 362 | last checkpoint 350, 12 steps lost, nothing restarted it | same |
+| Manual resume to done | 337 s | 341 s |
+| vLLM start to ready | 34 s | 44 s |
+| Training pod Running after apply | 7 s | 7 s |
+| Training pod delete to replacement Running | 31 s, resumed from checkpoint-150 | 32 s |
+| Serve Deployment apply to answering | 79 s | 78 s |
+| Serve pod delete to answering | 77 s | 77 s |
+
+Repeatability: the two runs agree within a few seconds on every step except vLLM start (34 vs 44 s). Report: `reports/review-report.html`; Grafana: `/d/gpu-review`.

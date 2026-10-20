@@ -1,0 +1,88 @@
+
+=== 1. Pre-flight (t=0s)
+[PASS] GPU visible (RTX 4070)
+[PASS] node Ready
+[PASS] 1 allocatable GPU (no sharing active)
+[PASS] Operator pods healthy
+[PASS] registry has gpu-train and gpu-serve
+[PASS] Grafana answers
+[PASS] model weights cached
+[PASS] root disk has 20 GB or more free
+
+=== 2. Reset (t=0s)
+[PASS] GPU idle after reset
+[PASS] no workload pods left
+
+=== 3. Traditional path: fine-tune, kill, resume, serve (t=0s)
+[PASS] training reached step 362 before the kill
+scripts/rehearsal.sh: line 44: 203772 Killed                  EPOCHS=9 .venv-trad/bin/python scripts/train.py --out outputs/trad_break > logs/rehearsal_trad_train.log 2>&1
+[PASS] training process is dead after kill
+       killed at step 362, last checkpoint checkpoint-350
+[PASS] nothing restarted the training (20 s later)
+[PASS] manual resume finished and wrote the adapter
+[PASS] resume used the checkpoint
+       resume to done: 337 s
+[PASS] vLLM serves base and tuned
+       vLLM start to ready: 34 s
+[PASS] base model answers
+[PASS] tuned answer differs from base
+
+=== 4. Kubernetes path: Job, pod delete, serve, pod delete (t=621s)
+[PASS] training pod Running
+       apply to pod Running: 7 s
+[PASS] checkpoints appear on the PVC
+       pod delete to replacement Running: 31 s
+[PASS] Job created a replacement pod by itself
+[PASS] replacement resumed from a checkpoint
+       resume_from_checkpoint=/work/outputs/k8s/checkpoint-150
+[PASS] training Job completes
+[PASS] serve Deployment answers with the tuned model
+       serve apply to ready: 79 s
+[PASS] tuned answer via NodePort
+[PASS] serve pod replaced itself and answers again
+       serve pod delete to answering: 77 s
+
+=== 6. Dashboards (t=1448s)
+[PASS] Grafana has live GPU data
+[PASS] dashboard defaults 5s refresh
+
+=== Cleanup (t=1448s)
+
+================ SUMMARY (total 1448 s) ================
+PASS  GPU visible (RTX 4070)
+PASS  node Ready
+PASS  1 allocatable GPU (no sharing active)
+PASS  Operator pods healthy
+PASS  registry has gpu-train and gpu-serve
+PASS  Grafana answers
+PASS  model weights cached
+PASS  root disk has 20 GB or more free
+PASS  GPU idle after reset
+PASS  no workload pods left
+PASS  training reached step 362 before the kill
+PASS  training process is dead after kill
+      killed at step 362, last checkpoint checkpoint-350
+PASS  nothing restarted the training (20 s later)
+PASS  manual resume finished and wrote the adapter
+PASS  resume used the checkpoint
+      resume to done: 337 s
+PASS  vLLM serves base and tuned
+      vLLM start to ready: 34 s
+PASS  base model answers
+PASS  tuned answer differs from base
+PASS  training pod Running
+      apply to pod Running: 7 s
+PASS  checkpoints appear on the PVC
+      pod delete to replacement Running: 31 s
+PASS  Job created a replacement pod by itself
+PASS  replacement resumed from a checkpoint
+      resume_from_checkpoint=/work/outputs/k8s/checkpoint-150
+PASS  training Job completes
+PASS  serve Deployment answers with the tuned model
+      serve apply to ready: 79 s
+PASS  tuned answer via NodePort
+PASS  serve pod replaced itself and answers again
+      serve pod delete to answering: 77 s
+PASS  Grafana has live GPU data
+PASS  dashboard defaults 5s refresh
+PASS=28 FAIL=0
