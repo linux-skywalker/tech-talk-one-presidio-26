@@ -1,0 +1,85 @@
+[03:32:20] === setting none: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[03:32:40] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[03:33:18] none train-alone-short run 1: ok runtime 25.35s steps/s 1.972 GPU busy 61% mem 2498 MiB
+[03:33:55] none train-alone-short run 2: ok runtime 25.08s steps/s 1.994 GPU busy 62% mem 2498 MiB
+[03:35:22] none train-alone-long run 1: ok runtime 75.87s steps/s 0.474 GPU busy 85% mem 4728 MiB
+[03:36:50] none train-alone-long run 2: ok runtime 76.02s steps/s 0.474 GPU busy 84% mem 4744 MiB
+[03:38:25] none serve alone: ok 27 fail 0 p50 0.475s p95 0.483s ttft p50 0.012s p95 0.013s
+[03:39:59] none serve+train: training job stayed Pending while the server held the only GPU; event:  Warning FailedScheduling 90s default-scheduler 0/1 nodes are available: 1 Insufficient nvidia.com/gpu. no new claims to deallocate, preemption: 0/1 nodes are available: 1 No preemption victims found 
+[03:43:34] === setting ts2: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[03:43:52] sharing ts2 -> node advertises nvidia.com/gpu=2 strategy=time-slicing replicas=2
+[03:44:53] ts2 pair run 1 job a: ok runtime 48.36s steps/s 1.034 (GPU busy 81%, mem 4298 MiB)
+[03:44:53] ts2 pair run 1 job b: ok runtime 48.47s steps/s 1.032 (GPU busy 81%, mem 4298 MiB)
+[03:45:55] ts2 pair run 2 job a: ok runtime 48.55s steps/s 1.03 (GPU busy 79%, mem 4298 MiB)
+[03:45:55] ts2 pair run 2 job b: ok runtime 48.65s steps/s 1.028 (GPU busy 79%, mem 4298 MiB)
+[03:47:28] ts2 serve alone: ok 26 fail 0 p50 0.475s p95 0.485s ttft p50 0.012s p95 0.013s
+[03:49:39] ts2 serve+train run 1: train ok 116s steps/s 0.31 | serve ok 85 fail 0 p50 1.057s p95 1.071s ttft p95 0.023s | restarts 0 | GPU busy 94% mem 9198 MiB
+[03:51:50] ts2 serve+train run 2: train ok 115.8s steps/s 0.311 | serve ok 85 fail 0 p50 1.058s p95 1.072s ttft p95 0.023s | restarts 0 | GPU busy 93% mem 9198 MiB
+[03:52:18] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[03:52:18] === setting ts2 done ===
+[03:52:18] === setting ts4: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[03:52:32] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[03:53:32] ts4 pair run 1 job a: ok runtime 48.5s steps/s 1.031 (GPU busy 81%, mem 4298 MiB)
+[03:53:32] ts4 pair run 1 job b: ok runtime 48.59s steps/s 1.029 (GPU busy 81%, mem 4298 MiB)
+[03:54:33] ts4 pair run 2 job a: ok runtime 49.34s steps/s 1.013 (GPU busy 78%, mem 4282 MiB)
+[03:54:33] ts4 pair run 2 job b: ok runtime 49.23s steps/s 1.016 (GPU busy 78%, mem 4282 MiB)
+[03:56:06] ts4 serve alone: ok 27 fail 0 p50 0.474s p95 0.475s ttft p50 0.012s p95 0.014s
+[03:58:17] ts4 serve+train run 1: train ok 115.9s steps/s 0.311 | serve ok 85 fail 0 p50 1.056s p95 1.071s ttft p95 0.023s | restarts 0 | GPU busy 93% mem 9182 MiB
+[04:00:28] ts4 serve+train run 2: train ok 115.9s steps/s 0.311 | serve ok 85 fail 0 p50 1.056s p95 1.072s ttft p95 0.023s | restarts 0 | GPU busy 93% mem 9182 MiB
+[04:00:54] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:00:54] === setting ts4 done ===
+[04:00:54] === setting mps2: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[04:01:42] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
+[04:02:44] mps2 pair run 1 job a: ok runtime 49.31s steps/s 1.014 (GPU busy 75%, mem 4149 MiB)
+[04:02:44] mps2 pair run 1 job b: ok runtime 49.31s steps/s 1.014 (GPU busy 75%, mem 4149 MiB)
+[04:03:45] mps2 pair run 2 job a: ok runtime 48.82s steps/s 1.024 (GPU busy 80%, mem 4165 MiB)
+[04:03:45] mps2 pair run 2 job b: ok runtime 48.8s steps/s 1.025 (GPU busy 80%, mem 4165 MiB)
+[04:05:20] mps2 serve alone: ok 27 fail 0 p50 0.481s p95 0.481s ttft p50 0.012s p95 0.013s
+[04:07:33] mps2 serve+train run 1: train ok 117.8s steps/s 0.306 | serve ok 86 fail 0 p50 0.847s p95 0.875s ttft p95 0.021s | restarts 0 | GPU busy 93% mem 9067 MiB
+[04:09:46] mps2 serve+train run 2: train ok 117.7s steps/s 0.306 | serve ok 86 fail 0 p50 0.847s p95 0.873s ttft p95 0.021s | restarts 0 | GPU busy 93% mem 9067 MiB
+[04:10:04] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:10:04] === setting mps2 done ===
+[04:10:24] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:10:24] === extra test oom under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:11:17] server up, GPU memory free before training: 6851 MiB
+[04:11:31] oom test ts4: training failed; peak GPU memory 11828 MiB; error: OutOfMemoryError: CUDA out of memory. Tried to allocate 76.00 MiB. GPU 0 has a total capacity of 11.59 GiB of which 45.06 MiB is free. Including non-PyTorch memory, this process has 6.64 GiB memory in use. Of the allocated memory 6.42 GiB is allocated by PyTorch, and 38.81 MiB is reserved by PyTorch but unallocated. If reserved 
+[04:11:59] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:11:59] === extra test oom under ts4 done ===
+[04:12:17] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:12:17] === extra test fault under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:12:45] fault ts4 run 1: killing job fa (host pid 634476) with kill -9
+[04:14:07] fault ts4 run 1: job fa (killed) -> ok; job fb -> ok, runtime 96.55s, 81 s after the kill; error in fb log: none
+[04:15:33] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:15:33] === extra test fault under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:16:00] fault ts4 run 1: killing job fa main process (host pid 644076) with kill -9
+[04:16:03] fault ts4 run 1: process 644076 gone after kill: yes
+[04:17:22] fault ts4 run 1: job fa (killed) -> ok; job fb -> ok, runtime 96.71s, 81 s after the kill; error in fb log: none
+[04:17:22] fault ts4 run 1: INVALID, job fa was not killed
+[04:17:49] fault ts4 run 2: killing job fa main process (host pid 648695) with kill -9
+[04:17:52] fault ts4 run 2: process 648695 gone after kill: yes
+[04:19:14] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:19:14] === extra test fault under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:19:42] fault ts4 run 1: killing job fa (container main process host pid 652589) with a forced delete (SIGKILL, no grace period)
+[04:19:47] fault ts4 run 1: process 652589 gone after kill (checked in /proc): no
+[04:20:52] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:20:52] === extra test fault under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:21:19] fault ts4 run 1: killing job fa (container main process host pid 655137) with a forced delete (SIGKILL, no grace period)
+[04:21:24] fault ts4 run 1: process 655137 gone after kill (checked in /proc): yes
+[04:22:04] fault ts4 run 1: job fa (killed) -> unfinished; job fb -> ok, runtime 60.05s, 44 s after the kill; error in fb log: none
+[04:22:31] fault ts4 run 2: killing job fa (container main process host pid 657574) with a forced delete (SIGKILL, no grace period)
+[04:22:36] fault ts4 run 2: process 657574 gone after kill (checked in /proc): yes
+[04:23:16] fault ts4 run 2: job fa (killed) -> unfinished; job fb -> ok, runtime 59.9s, 44 s after the kill; error in fb log: none
+[04:23:43] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:23:43] === extra test fault under ts4 done ===
+[04:24:34] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
+[04:24:34] === extra test fault under mps2 (nvidia.com/gpu=2 strategy=mps replicas=2) ===
+[04:25:01] fault mps2 run 1: killing job fa (container main process host pid 665590) with a forced delete (SIGKILL, no grace period)
+[04:25:06] fault mps2 run 1: process 665590 gone after kill (checked in /proc): yes
+[04:26:00] fault mps2 run 1: job fa (killed) -> unfinished; job fb -> ok, runtime 74.14s, 59 s after the kill; error in fb log: none
+[04:26:27] fault mps2 run 2: killing job fa (container main process host pid 668312) with a forced delete (SIGKILL, no grace period)
+[04:26:33] fault mps2 run 2: process 668312 gone after kill (checked in /proc): yes
+[04:27:26] fault mps2 run 2: job fa (killed) -> unfinished; job fb -> ok, runtime 74.04s, 59 s after the kill; error in fb log: none
+[04:27:47] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:27:47] === extra test fault under mps2 done ===
+[04:28:38] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
+[04:28:38] === extra test memtest under mps2 (nvidia.com/gpu=2 strategy=mps replicas=2) ===

@@ -1,0 +1,11 @@
+[03:52:18] === setting ts4: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[03:52:32] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[03:53:32] ts4 pair run 1 job a: ok runtime 48.5s steps/s 1.031 (GPU busy 81%, mem 4298 MiB)
+[03:53:32] ts4 pair run 1 job b: ok runtime 48.59s steps/s 1.029 (GPU busy 81%, mem 4298 MiB)
+[03:54:33] ts4 pair run 2 job a: ok runtime 49.34s steps/s 1.013 (GPU busy 78%, mem 4282 MiB)
+[03:54:33] ts4 pair run 2 job b: ok runtime 49.23s steps/s 1.016 (GPU busy 78%, mem 4282 MiB)
+[03:56:06] ts4 serve alone: ok 27 fail 0 p50 0.474s p95 0.475s ttft p50 0.012s p95 0.014s
+[03:58:17] ts4 serve+train run 1: train ok 115.9s steps/s 0.311 | serve ok 85 fail 0 p50 1.056s p95 1.071s ttft p95 0.023s | restarts 0 | GPU busy 93% mem 9182 MiB
+[04:00:28] ts4 serve+train run 2: train ok 115.9s steps/s 0.311 | serve ok 85 fail 0 p50 1.056s p95 1.072s ttft p95 0.023s | restarts 0 | GPU busy 93% mem 9182 MiB
+[04:00:54] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:00:54] === setting ts4 done ===

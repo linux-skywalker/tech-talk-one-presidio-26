@@ -1,0 +1,1 @@
+nvidia.com/gpu=2 strategy=time-slicing replicas=2

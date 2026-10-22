@@ -1,0 +1,2 @@
+[04:28:38] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
+[04:28:38] === extra test memtest under mps2 (nvidia.com/gpu=2 strategy=mps replicas=2) ===

@@ -5,7 +5,7 @@
 SC=$1; ARM=$2; REP=${3:-1}; export ARM
 source "$(dirname "$0")/lib.sh"
 RUNID=$(date +%H%M%S)-$SC-$ARM-$REP; RUN=logs/kueue/${SC}_${ARM}_${REP}; rm -rf "$RUN"; mkdir -p "$RUN"; export RUNID RUN
-TIMEOUT=${TIMEOUT:-$([ $SC = s3 ] && echo 600 || echo 420)}
+TIMEOUT=${TIMEOUT:-$([ $SC = s3 -o $SC = s5 ] && echo 700 || echo 420)}
 echo "=== $SC / $ARM / run $REP ($RUNID) ==="
 kq_reset || exit 1
 [ "$(nprocs 'vllm serve')" != 0 ] && { echo "host vLLM running"; exit 1; }
@@ -18,6 +18,12 @@ case $SC in
  s4) submit_train t1 team-a trainm batch; submit_train t2 team-a trainm batch   # batch work fills the GPU, then inference arrives
      for i in $(seq 1 120); do [ "$(kubectl get pods -n team-a -l app=kq-train --no-headers 2>/dev/null | grep -c Running)" = 2 ] && break; sleep 1; done
      sleep 12; tl "both batch jobs running; inference arrives now"; submit_serve team-a inference; NJOBS=2;;
+ s5) # combined workload: the inference server is already running, then 6 training jobs (3 per team, mixed sizes) arrive together
+     submit_serve team-a inference
+     for i in $(seq 1 120); do kubectl get deploy serve -n team-a -o jsonpath='{.status.readyReplicas}' 2>/dev/null | grep -q 1 && break; sleep 2; done
+     sleep 5; T0=$(date +%s.%N); sed -i "s/^t0 [0-9.]*/t0 $T0/" "$RUN/meta.txt"; tl_start; : > "$RUN/submits.txt"; echo "serve team-a serve $T0" >> "$RUN/submits.txt"
+     submit_train a1 team-a trainm batch; submit_train a2 team-a trains batch; submit_train a3 team-a trainm batch
+     submit_train b1 team-b trains batch; submit_train b2 team-b trainm batch; submit_train b3 team-b trains batch; NJOBS=6;;
  s3) for i in 1 2 3 4 5; do submit_train a$i team-a trainm batch; done; sleep 25
      for i in 1 2; do submit_train b$i team-b trainm batch; done; NJOBS=7;;
 esac
@@ -31,7 +37,7 @@ for t in $(seq 1 $TIMEOUT); do
   [ $((t % 20)) = 0 ] && tl "jobs done $done_n, failed $fail_n of $NJOBS; $(kubectl get pods -A -l 'kq-kind' --no-headers 2>/dev/null | awk '{c[$4]++}END{for(k in c)printf "%s=%d ",k,c[k]}') GPU $(gpu_now)"
   [ $((done_n + fail_n)) -ge $NJOBS ] && break; sleep 1
 done
-[ $SC != s3 ] && { # let the probe see serve under load / alone for a short while after the batch work
+[ $SC != s3 -a $SC != s5 ] && { # let the probe see serve under load / alone for a short while after the batch work
   for i in $(seq 1 40); do kubectl get deploy serve -n team-a -o jsonpath='{.status.readyReplicas}' 2>/dev/null | grep -q 1 && break; sleep 3; done; sleep 10; }
 echo "end $(date +%s.%N)" >> "$RUN/meta.txt"
 # the DCGM exporter view of the same window (max over series, subquery form as in the Watching step)

@@ -75,5 +75,23 @@ def pct(v, q): v = sorted(v); return v[min(len(v) - 1, int(q * len(v)))] if v el
 tt = [float(r["ttft_s"]) for r in ok]; tl = [float(r["total_s"]) for r in ok]
 m["probe_ok"] = len(ok); m["probe_err"] = len(probe) - len(ok)
 m["ttft_p50_s"] = pct(tt, .5); m["ttft_p95_s"] = pct(tt, .95); m["latency_p95_s"] = pct(tl, .95)
+# per-job timeline CSV: submit, admitted (Kueue Workload condition), first start, finish, status
+adm = {}
+try:
+    for w in json.load(open(f"{run}/workloads.json"))["items"]:
+        for c in w.get("status", {}).get("conditions", []):
+            if c["type"] == "Admitted" and c["status"] == "True": adm[w["metadata"]["name"]] = ts(c["lastTransitionTime"])
+except Exception: pass
+with open(f"{run}/jobs.csv", "w") as f:
+    f.write("scenario,arm,rep,job,team,kind,submit_s,admitted_s,start_s,finish_s,status,wait_to_start_s\n")
+    for n, s in sorted(subs.items()):
+        if n == "serve": continue
+        j = jobs.get(n, {}); c = j.get("status", {})
+        a = next((v for k, v in adm.items() if k.startswith(f"job-{n}-")), None)
+        mine = [p["_start"] for p in pods if p["_n"] == n and p["_start"]]
+        fin = ts(c["completionTime"]) if c.get("completionTime") else None
+        st = "ok" if c.get("succeeded") else ("failed" if any(x.get("type") == "Failed" for x in c.get("conditions", [])) else "unfinished")
+        r = lambda v: "" if v is None else f"{v - t0:.0f}"
+        f.write(f"{sc},{arm},{rep},{n},{s['team']},{s['kind']},{s['sub'] - t0:.0f},{r(a)},{r(min(mine) if mine else None)},{r(fin)},{st},{wait.get(n) if wait.get(n) is not None else ''}\n")
 json.dump(m, open(f"{run}/metrics.json", "w"), indent=1)
 for k, v in m.items(): print(f"  {k:32s} {v}")

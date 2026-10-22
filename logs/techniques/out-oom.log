@@ -1,0 +1,6 @@
+[04:10:24] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:10:24] === extra test oom under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:11:17] server up, GPU memory free before training: 6851 MiB
+[04:11:31] oom test ts4: training failed; peak GPU memory 11828 MiB; error: OutOfMemoryError: CUDA out of memory. Tried to allocate 76.00 MiB. GPU 0 has a total capacity of 11.59 GiB of which 45.06 MiB is free. Including non-PyTorch memory, this process has 6.64 GiB memory in use. Of the allocated memory 6.42 GiB is allocated by PyTorch, and 38.81 MiB is reserved by PyTorch but unallocated. If reserved 
+[04:11:59] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:11:59] === extra test oom under ts4 done ===
