@@ -1,0 +1,2 @@
+== DRA data, mode dra-excl, 2026-10-23 02:52:41, RTX 4070, k3s v1.36.5+k3s1 ==
+(DRA, exclusive claim per job: one device; rerun with fresh output folders)

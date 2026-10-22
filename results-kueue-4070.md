@@ -92,3 +92,18 @@ What DRA can and cannot express with one device (from these tests only):
 - Can: ask for a device by attribute (memory, product), share one claim between pods, set time-slicing per claim instead of a node-wide replica count.
 - Cannot (here): more than one claimant exclusively, any isolation between sharers, and anything about MIG/MPS (not tested). The device plugin and DRA could not be used side by side (plugin disabled while DRA ran), so there is no concurrent comparison. Time slicing gave no memory limits, same as the device-plugin version.
 - Not tested: Kueue with DRA (ResourceClaimTemplate path), vLLM under DRA, behaviour over upgrades.
+
+### DRA versus device-plugin time slicing, same workloads (single runs, `scripts/demo/kueue/dra-data.sh`, raw: `logs/dra/data-*.txt`)
+Training jobs: SmolLM2-135M. T1 = two jobs at once (batch 16, 2 epochs). T2 = the vLLM server plus one job (batch 48, 4 epochs).
+| Test (single run each) | Device plugin, time slicing x8 | DRA, one shared claim with time slicing |
+|---|---|---|
+| T1: both jobs finished | 62 s | 61 s |
+| T1: training time per job | 49.7 s and 49.7 s | 49.6 s and 49.7 s |
+| T1: GPU busy average | 76% | 82% |
+| T2: server ready | 55 s | 55 s |
+| T2: run ended | 90 s | 92 s |
+| T2: server restarts | 0 | 0 |
+| T2: GPU busy average / peak memory | 85% / 9342 MiB | 84% / 9196 MiB |
+Reading: on this card DRA time slicing performed the same as the device plugin within the noise of single runs. DRA did not make anything faster; what it adds is the claim model (attribute selection, per-claim sharing config), not speed. The 6 point gap in GPU busy in T1 is one run and should not be read as a difference.
+
+Exclusive claim per job (T1): the first attempt is INVALID. Both jobs reused the output folders of the shared-claim test, found finished checkpoints and skipped training (0.0017 s, GPU 1% busy). The script now gives each job a fresh folder and the test is being rerun; the corrected number is added below when it lands. The first-pass file is kept as `logs/dra/data-dra-first-pass.txt`.

@@ -1,0 +1,30 @@
+== DRA data, mode dra, 2026-10-23 02:49:29, RTX 4070, k3s v1.36.5+k3s1 ==
+(DRA driver 0.5.1, device plugin off; shared claim with TimeSlicing interval Long)
+T1 [DRA shared claim, time slicing] two training jobs (SmolLM2-135M, batch 16, 2 epochs), single run: both finished after 61 s (apply to last completion)
+  a: succeeded=1  start +0 s  completed +60 s  train_runtime 
+
+
+49.6 s
+  b: succeeded=1  start +0 s  completed +60 s  train_runtime 
+
+
+49.67 s
+  GPU over 61 s: busy avg 82% max 100%, memory max 4276 MiB, power avg 141 W max 180 W, temp max 58 C
+T2 [DRA shared claim, time slicing] vLLM server + one training job (SmolLM2-135M, batch 48, 4 epochs), single run: server ready after 55 s; run ended after 92 s; restarts: 0
+  c: succeeded=1  start +0 s  completed +90 s  train_runtime 
+
+
+79.48 s
+  GPU over 91 s: busy avg 84% max 100%, memory max 9196 MiB, power avg 147 W max 177 W, temp max 62 C
+(DRA, exclusive claim per job: one device)
+T1 [DRA exclusive claim per job] two training jobs (SmolLM2-135M, batch 16, 2 epochs), single run: both finished after 21 s (apply to last completion)
+  a: succeeded=1  start +0 s  completed +10 s  train_runtime 
+
+
+0.0017 s
+  b: succeeded=1  start +0 s  completed +19 s  train_runtime 
+
+
+0.0017 s
+  GPU over 21 s: busy avg 1% max 21%, memory max 1169 MiB, power avg 28 W max 43 W, temp max 52 C
+EXIT
