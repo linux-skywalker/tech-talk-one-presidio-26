@@ -1,0 +1,467 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "batch/v1",
+            "kind": "Job",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"batch/v1\",\"kind\":\"Job\",\"metadata\":{\"annotations\":{},\"labels\":{\"kq-kind\":\"trainm\"},\"name\":\"t2\",\"namespace\":\"team-b\"},\"spec\":{\"backoffLimit\":3,\"template\":{\"metadata\":{\"labels\":{\"app\":\"kq-train\",\"kq-job\":\"t2\"}},\"spec\":{\"containers\":[{\"args\":[\"--out\",\"/out/020204-s1-plain-1/t2\"],\"env\":[{\"name\":\"MODEL\",\"value\":\"HuggingFaceTB/SmolLM2-135M-Instruct\"},{\"name\":\"EPOCHS\",\"value\":\"4\"},{\"name\":\"BATCH\",\"value\":\"48\"},{\"name\":\"HF_HOME\",\"value\":\"/hf\"},{\"name\":\"HF_HUB_OFFLINE\",\"value\":\"1\"},{\"name\":\"HF_DATASETS_OFFLINE\",\"value\":\"1\"}],\"image\":\"localhost:5000/gpu-train:v1\",\"name\":\"train\",\"resources\":{\"limits\":{\"nvidia.com/gpu\":1}},\"volumeMounts\":[{\"mountPath\":\"/hf\",\"name\":\"hf\"},{\"mountPath\":\"/out\",\"name\":\"out\"}]}],\"restartPolicy\":\"Never\",\"runtimeClassName\":\"nvidia\",\"volumes\":[{\"hostPath\":{\"path\":\"/home/linux-skywalker/.cache/huggingface\",\"type\":\"Directory\"},\"name\":\"hf\"},{\"hostPath\":{\"path\":\"/tmp/kq-out\",\"type\":\"DirectoryOrCreate\"},\"name\":\"out\"}]}}}}\n"
+                },
+                "creationTimestamp": "2026-10-22T20:32:39Z",
+                "generation": 1,
+                "labels": {
+                    "kq-kind": "trainm"
+                },
+                "name": "t2",
+                "namespace": "team-b",
+                "resourceVersion": "116986",
+                "uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be"
+            },
+            "spec": {
+                "backoffLimit": 3,
+                "completionMode": "NonIndexed",
+                "completions": 1,
+                "manualSelector": false,
+                "parallelism": 1,
+                "podReplacementPolicy": "TerminatingOrFailed",
+                "selector": {
+                    "matchLabels": {
+                        "batch.kubernetes.io/controller-uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be"
+                    }
+                },
+                "suspend": false,
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "kq-train",
+                            "batch.kubernetes.io/controller-uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be",
+                            "batch.kubernetes.io/job-name": "t2",
+                            "controller-uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be",
+                            "job-name": "t2",
+                            "kq-job": "t2"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "args": [
+                                    "--out",
+                                    "/out/020204-s1-plain-1/t2"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "MODEL",
+                                        "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                    },
+                                    {
+                                        "name": "EPOCHS",
+                                        "value": "4"
+                                    },
+                                    {
+                                        "name": "BATCH",
+                                        "value": "48"
+                                    },
+                                    {
+                                        "name": "HF_HOME",
+                                        "value": "/hf"
+                                    },
+                                    {
+                                        "name": "HF_HUB_OFFLINE",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "name": "HF_DATASETS_OFFLINE",
+                                        "value": "1"
+                                    }
+                                ],
+                                "image": "localhost:5000/gpu-train:v1",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "train",
+                                "resources": {
+                                    "limits": {
+                                        "nvidia.com/gpu": "1"
+                                    }
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/hf",
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "mountPath": "/out",
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Never",
+                        "runtimeClassName": "nvidia",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "hostPath": {
+                                    "path": "/home/linux-skywalker/.cache/huggingface",
+                                    "type": "Directory"
+                                },
+                                "name": "hf"
+                            },
+                            {
+                                "hostPath": {
+                                    "path": "/tmp/kq-out",
+                                    "type": "DirectoryOrCreate"
+                                },
+                                "name": "out"
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "completionTime": "2026-10-22T20:35:28Z",
+                "conditions": [
+                    {
+                        "lastProbeTime": "2026-10-22T20:35:28Z",
+                        "lastTransitionTime": "2026-10-22T20:35:28Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "reason": "CompletionsReached",
+                        "status": "True",
+                        "type": "SuccessCriteriaMet"
+                    },
+                    {
+                        "lastProbeTime": "2026-10-22T20:35:28Z",
+                        "lastTransitionTime": "2026-10-22T20:35:28Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "reason": "CompletionsReached",
+                        "status": "True",
+                        "type": "Complete"
+                    }
+                ],
+                "ready": 0,
+                "startTime": "2026-10-22T20:32:39Z",
+                "succeeded": 1,
+                "terminating": 0,
+                "uncountedTerminatedPods": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T20:32:39Z",
+                "generateName": "t2-",
+                "generation": 1,
+                "labels": {
+                    "app": "kq-train",
+                    "batch.kubernetes.io/controller-uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be",
+                    "batch.kubernetes.io/job-name": "t2",
+                    "controller-uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be",
+                    "job-name": "t2",
+                    "kq-job": "t2"
+                },
+                "name": "t2-msc57",
+                "namespace": "team-b",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "t2",
+                        "uid": "d635aa1c-2eaa-4bf9-85c4-bfe3d818c8be"
+                    }
+                ],
+                "resourceVersion": "116984",
+                "uid": "db685894-4b30-4eac-b41f-dfd1dab0742d"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--out",
+                            "/out/020204-s1-plain-1/t2"
+                        ],
+                        "env": [
+                            {
+                                "name": "MODEL",
+                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                            },
+                            {
+                                "name": "EPOCHS",
+                                "value": "4"
+                            },
+                            {
+                                "name": "BATCH",
+                                "value": "48"
+                            },
+                            {
+                                "name": "HF_HOME",
+                                "value": "/hf"
+                            },
+                            {
+                                "name": "HF_HUB_OFFLINE",
+                                "value": "1"
+                            },
+                            {
+                                "name": "HF_DATASETS_OFFLINE",
+                                "value": "1"
+                            }
+                        ],
+                        "image": "localhost:5000/gpu-train:v1",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "train",
+                        "resources": {
+                            "limits": {
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/hf",
+                                "name": "hf"
+                            },
+                            {
+                                "mountPath": "/out",
+                                "name": "out"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-fplrh",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "skywalker-ubuntu",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "runtimeClassName": "nvidia",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/home/linux-skywalker/.cache/huggingface",
+                            "type": "Directory"
+                        },
+                        "name": "hf"
+                    },
+                    {
+                        "hostPath": {
+                            "path": "/tmp/kq-out",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "out"
+                    },
+                    {
+                        "name": "kube-api-access-fplrh",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "allocatedResources": {
+                    "nvidia.com/gpu": "1"
+                },
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-22T20:35:27Z",
+                        "observedGeneration": 1,
+                        "status": "False",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-22T20:32:39Z",
+                        "observedGeneration": 1,
+                        "reason": "PodCompleted",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-22T20:35:26Z",
+                        "observedGeneration": 1,
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-22T20:35:26Z",
+                        "observedGeneration": 1,
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-22T20:32:39Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "allocatedResources": {
+                            "nvidia.com/gpu": "1"
+                        },
+                        "allocatedResourcesStatus": [
+                            {
+                                "name": "nvidia.com/gpu",
+                                "resources": [
+                                    {
+                                        "health": "Healthy",
+                                        "resourceID": "GPU-f04e97ad-db28-af12-b59a-202645617930::1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "containerID": "containerd://e1a9325ae7249cc1356b9c5d0d06a890d2f166b86ae7cb9ac10abaf3af919449",
+                        "image": "localhost:5000/gpu-train:v1",
+                        "imageID": "localhost:5000/gpu-train@sha256:786dca9d4139a66c3e3662496f60defd811199c508c474af3fef421556ace533",
+                        "lastState": {},
+                        "name": "train",
+                        "ready": false,
+                        "resources": {
+                            "limits": {
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "containerd://e1a9325ae7249cc1356b9c5d0d06a890d2f166b86ae7cb9ac10abaf3af919449",
+                                "exitCode": 0,
+                                "finishedAt": "2026-10-22T20:35:25Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-10-22T20:32:39Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 0,
+                                "supplementalGroups": [
+                                    0,
+                                    44,
+                                    992
+                                ],
+                                "uid": 0
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/hf",
+                                "name": "hf"
+                            },
+                            {
+                                "mountPath": "/out",
+                                "name": "out"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-fplrh",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.88.9",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.88.9"
+                    },
+                    {
+                        "ip": "2406:7400:11d:4e96:68ea:3b7d:e280:afcb"
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Succeeded",
+                "podIP": "10.42.0.140",
+                "podIPs": [
+                    {
+                        "ip": "10.42.0.140"
+                    }
+                ],
+                "qosClass": "BestEffort",
+                "resources": {},
+                "startTime": "2026-10-22T20:32:39Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
