@@ -21,3 +21,17 @@ Status: Proven (measured on WSL2), Partial, Not proven.
 1. Watching: done (Grafana and DCGM scraped and queryable, but dashboard panels were still empty in the browser, see logs/phase2c_notes.md).
 2. Moving and Setting up: run the H100 checklist and record which workarounds vanish.
 3. Growing: join a second node (needs a second machine or VM).
+
+
+## Kueue and DRA on the RTX 4070 (Ubuntu, single runs; see results-kueue-4070.md)
+| Row | Slide could say | Status | Evidence | Missing or limits |
+|---|---|---|---|---|
+| Admission keeps inference up | With Kueue the inference server answered at 56 s instead of 208 s with 4 restarts (scenario 1) | Partial | One run each, plain vs Kueue, `logs/kueue/s1_*` | n=1, no spread; quota units are our memory-shaped convention; batch finished later (236 s vs 169 s) |
+| Priority and preemption | With preemption on, inference answered at 87 s instead of 206 s while batch work was running (scenario 4) | Partial | One run each, `logs/kueue/s4_*`; Kueue recorded one preempted workload | n=1; lost work of the preempted job not measured; batch finished 68 s later |
+| Higher GPU use | GPU busy 87 to 93% with Kueue vs 73 to 76% plain | Partial | DCGM averages over each run | Single runs; the plain runs left the server down, so the gap is partly that |
+| Fairness across teams under a flood | Not shown | Not proven | Scenario 3 was not run | Run needed |
+| Latency | No latency win | Not proven | p95 1.07 s with training load, barely loaded otherwise | Do not claim |
+| DRA exposes the card | NVIDIA DRA driver published the RTX 4070 as a device and ran a pod via a claim | Proven (this machine) | `logs/dra/resourceslice-rtx4070.yaml`, pod output | NVIDIA lists data center GPUs; one machine only |
+| DRA selects by attribute, shares a claim, sets time slicing per claim | CEL memory filter, shared claim, time slicing via claim | Proven, with limits | Pending/Running results, two jobs finished sharing | Needed a driver feature gate; no isolation; device plugin had to be off |
+| Mock devices / mixed GPU sizes | Not shown | Not proven | Phase 3 not run | Simulation only if done |
+| MIG | Theory only | Not proven | RTX 4070 has no MIG | |

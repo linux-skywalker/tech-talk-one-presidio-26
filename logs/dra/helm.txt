@@ -1,0 +1,2 @@
+NAME                 	NAMESPACE            	REVISION	UPDATED                                	STATUS  	CHART                      	APP VERSION
+dra-driver-nvidia-gpu	nvidia-dra-driver-gpu	2       	2026-10-23 02:35:26.848591159 +0530 IST	deployed	dra-driver-nvidia-gpu-0.5.1	0.5.1      

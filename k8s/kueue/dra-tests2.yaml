@@ -1,0 +1,26 @@
+# Test 2: one shared ResourceClaim used by two pods. Test 3: CEL selectors on memory (10Gi should match the 12 GiB card, 20Gi should not).
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaim
+metadata: {name: shared-gpu}
+spec:
+  devices:
+    requests:
+    - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: share-1}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 90"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimName: shared-gpu}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: share-2}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 90"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimName: shared-gpu}]

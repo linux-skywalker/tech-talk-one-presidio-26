@@ -1,0 +1,70 @@
+# Test 4: time slicing requested through the claim (opaque driver config), two pods sharing one claim; the second pod runs a SmolLM training step set.
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaim
+metadata: {name: ts-gpu}
+spec:
+  devices:
+    requests:
+    - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}
+    config:
+    - requests: ["gpu"]
+      opaque:
+        driver: gpu.nvidia.com
+        parameters:
+          apiVersion: resource.nvidia.com/v1beta1
+          kind: GpuConfig
+          sharing:
+            strategy: TimeSlicing
+            timeSlicingConfig: {interval: Long}
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: dra-train}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: train
+        image: localhost:5000/gpu-train:v1
+        args: ["--out", "/out/dra-train"]
+        env:
+        - {name: MODEL, value: HuggingFaceTB/SmolLM2-135M-Instruct}
+        - {name: EPOCHS, value: "2"}
+        - {name: BATCH, value: "16"}
+        - {name: HF_HOME, value: /hf}
+        - {name: HF_HUB_OFFLINE, value: "1"}
+        - {name: HF_DATASETS_OFFLINE, value: "1"}
+        volumeMounts: [{name: hf, mountPath: /hf}, {name: out, mountPath: /out}]
+        resources: {claims: [{name: g}]}
+      resourceClaims: [{name: g, resourceClaimName: ts-gpu}]
+      volumes:
+      - {name: hf, hostPath: {path: /home/linux-skywalker/.cache/huggingface, type: Directory}}
+      - {name: out, hostPath: {path: /tmp/kq-out, type: DirectoryOrCreate}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: dra-train2}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: train
+        image: localhost:5000/gpu-train:v1
+        args: ["--out", "/out/dra-train2"]
+        env:
+        - {name: MODEL, value: HuggingFaceTB/SmolLM2-135M-Instruct}
+        - {name: EPOCHS, value: "2"}
+        - {name: BATCH, value: "16"}
+        - {name: HF_HOME, value: /hf}
+        - {name: HF_HUB_OFFLINE, value: "1"}
+        - {name: HF_DATASETS_OFFLINE, value: "1"}
+        volumeMounts: [{name: hf, mountPath: /hf}, {name: out, mountPath: /out}]
+        resources: {claims: [{name: g}]}
+      resourceClaims: [{name: g, resourceClaimName: ts-gpu}]
+      volumes:
+      - {name: hf, hostPath: {path: /home/linux-skywalker/.cache/huggingface, type: Directory}}
+      - {name: out, hostPath: {path: /tmp/kq-out, type: DirectoryOrCreate}}

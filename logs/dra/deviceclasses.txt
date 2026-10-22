@@ -1,0 +1,4 @@
+NAME                  AGE
+gpu.nvidia.com        8m12s
+mig.nvidia.com        8m12s
+vfio.gpu.nvidia.com   8m12s

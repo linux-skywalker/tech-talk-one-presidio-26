@@ -11,7 +11,7 @@ Machine: native Ubuntu 24.04.4, kernel 6.17.0-14-generic, driver 590.48.01, RTX 
 | Mock-device driver | kubernetes-sigs/dra-example-driver exists (8 fake 80Gi GPUs). Docs cover kind and GKE only; k3s untested. |
 | Kueue + DRA | ResourceClaimTemplate path is beta (v0.18+); only ResourceClaimTemplate references and ExactCount supported. |
 
-Phase 2 (DRA) and Phase 3 (mock devices) are NOT run yet. No DRA claim is made.
+Phase 2 (DRA) was run, see the DRA section. Phase 3 (mock devices) was NOT run.
 
 ## Setup
 - Quota unit = one time-sliced GPU replica, about 1.5 GB. Units are a memory-shaped convention, not isolation: serve 3 units, medium training 3, small training 1. Plain arm asks for 1 replica per pod like today.
@@ -74,4 +74,21 @@ Limits: `t2`'s 112 s queue wait in the summary is for its restarted pod. Whether
 - Scenario 1: Kueue kept the inference server up (56 s versus 208 s and 4 restarts on the plain setup) and raised average GPU busy (89% versus 76%), at the cost of a later batch finish (236 s versus 169 s).
 - Scenario 4: with preemption on, inference answered at 87 s instead of 206 s while the batch work was running; the price was one training job being preempted and re-run (batch finished 68 s later).
 ## What we cannot claim
-- Any average or spread. Any latency win. How much is Kueue versus the memory-shaped requests. Anything about DRA or mock devices (not run yet), MIG, other GPUs or fairness under a flood (Scenario 3 not run). Preempted-job lost work.
+- Any average or spread. Any latency win. How much is Kueue versus the memory-shaped requests. Anything about mock devices (not run), MIG, Kueue together with DRA (not tested), other GPUs or fairness under a flood (Scenario 3 not run). Preempted-job lost work.
+
+## Phase 2: DRA on the RTX 4070 (single attempts, nothing averaged)
+Setup: NVIDIA DRA driver chart 0.5.1 (`nvidiaDriverRoot=/`, host-installed driver, GPU allocation only), GPU Operator device plugin DISABLED by patching the ClusterPolicy (reversible), node labelled `nvidia.com/dra-kubelet-plugin=true`. Manifests: `k8s/kueue/dra-*.yaml`, evidence: `logs/dra/`. Configs were backed up first (`backups/`, git-ignored).
+| Test | Result |
+|---|---|
+| Does the driver accept a GeForce card? | **Yes.** It published one device `gpu-0` in a ResourceSlice: productName "NVIDIA GeForce RTX 4070", brand GeForce, Ada Lovelace, capacity 12282Mi, driver 590.48.1. NVIDIA's prerequisites page lists "Data Center GPUs", so this goes beyond the documented hardware list; it is one machine, not a support statement. |
+| Pod with a ResourceClaimTemplate (1 GPU, no `runtimeClassName`) | Running; `nvidia-smi -L` inside lists the RTX 4070. |
+| Second pod, its own claim | **Pending**: "cannot allocate all claims"; the GPU is exclusive per claim, so with one device a second claim waits. |
+| Two pods sharing ONE ResourceClaim | Both Running on the same GPU. No memory isolation was tested. |
+| CEL selector on memory | `>= 10Gi` Running; `>= 20Gi` Pending (the card has 12 GiB). Selecting by attribute works, with one device it can only accept or reject. |
+| Time slicing in the claim (opaque `GpuConfig`, `strategy: TimeSlicing`, interval Long) | First try failed: the pod stuck in ContainerCreating with `"TimeSlicing" is selected as the GPU sharing strategy, but the "TimeSlicingSettings" feature gate is not enabled`. After enabling the driver feature gate (`helm --set featureGates.TimeSlicingSettings=true`), two SmolLM training jobs using one claim both succeeded, 50 s each, concurrently. |
+| Revert | Chart uninstalled, node label removed, device plugin re-enabled; allocatable `nvidia.com/gpu` back to 8, DCGM exporter and device plugin Running. |
+
+What DRA can and cannot express with one device (from these tests only):
+- Can: ask for a device by attribute (memory, product), share one claim between pods, set time-slicing per claim instead of a node-wide replica count.
+- Cannot (here): more than one claimant exclusively, any isolation between sharers, and anything about MIG/MPS (not tested). The device plugin and DRA could not be used side by side (plugin disabled while DRA ran), so there is no concurrent comparison. Time slicing gave no memory limits, same as the device-plugin version.
+- Not tested: Kueue with DRA (ResourceClaimTemplate path), vLLM under DRA, behaviour over upgrades.

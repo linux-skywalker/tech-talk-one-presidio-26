@@ -1,0 +1,5 @@
+# Values for the NVIDIA DRA driver chart on this machine: host-installed driver (root /), GPU allocation only (no ComputeDomains: no multi-node NVLink here).
+image: {pullPolicy: IfNotPresent}
+kubeletPlugin:
+  nodeSelector:
+    nvidia.com/dra-kubelet-plugin: "true"
