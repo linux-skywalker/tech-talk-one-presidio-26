@@ -9,17 +9,19 @@ cleanup_sharing() {
   kubectl delete -f k8s/serve-tiny-ports.yaml -f k8s/serve-tiny.yaml --ignore-not-found --wait=true >/dev/null 2>&1
   kubectl patch clusterpolicies.nvidia.com/cluster-policy --type json -p '[{"op":"remove","path":"/spec/devicePlugin/config"}]' >/dev/null 2>&1
   kubectl delete -f k8s/time-slicing-8.yaml --ignore-not-found >/dev/null 2>&1
-  for i in $(seq 1 40); do [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 1 ] && break; sleep 3; done
+  for i in $(seq 1 40); do [ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 1 ] && break; sleep 3; done
 }
-kubectl delete -f k8s/train-job.yaml --ignore-not-found >/dev/null 2>&1; kubectl delete pvc work --ignore-not-found >/dev/null 2>&1
+kubectl delete -f k8s/train-job.yaml --ignore-not-found >/dev/null 2>&1
+bash scripts/demo/seed_cache.sh || exit 1
+bash scripts/demo/seed_cache.sh --reset-outputs >/dev/null
 cleanup_sharing; wait_gpu_free
 
 step 1 "Sharing"
 fix "Tell Kubernetes the GPU may be shared (time slicing), then run $N models as ordinary pods."
 show kubectl apply -f k8s/time-slicing-8.yaml
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-8","default":"any"}}}}' >/dev/null
-for i in $(seq 1 40); do [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 8 ] && break; sleep 3; done
-say "GPUs Kubernetes can now schedule: $(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')  (one physical card)"
+for i in $(seq 1 40); do [ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 8 ] && break; sleep 3; done
+say "GPUs Kubernetes can now schedule: $(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')  (one physical card)"
 sed "s/replicas: 6/replicas: $N/" k8s/serve-tiny.yaml | kubectl apply -f - >/dev/null; kubectl apply -f k8s/serve-tiny-ports.yaml >/dev/null
 T0=$(date +%s)
 for t in $(seq 1 900); do
@@ -48,7 +50,7 @@ cleanup_sharing; wait_gpu_free
 pause
 
 step 2 "Failures"
-fix "Kubernetes watches the Job. When the pod dies it starts a replacement, and training resumes from its last checkpoint."
+fix "Kubernetes watches the Job. We simulate the crash by deleting the pod; it starts a replacement and training resumes from its last checkpoint."
 kubectl apply -f k8s/pvc.yaml -f k8s/train-job.yaml >/dev/null
 for t in $(seq 1 600); do kubectl exec job/train -- ls /work/outputs/k8s 2>/dev/null | grep -q 'checkpoint-75$' && break; printf '\r  training in a pod... %ss ' $t; sleep 1; done; echo
 OLD=$(kubectl get pods -l app=train -o name | head -1)
@@ -57,12 +59,20 @@ T0=$(date +%s); NEW=""
 for t in $(seq 1 180); do
   NEW=$(kubectl get pods -l app=train --no-headers 2>/dev/null | awk '$3=="Running"{print "pod/"$1}' | head -1)
   [ -n "$NEW" ] && [ "$NEW" != "$OLD" ] && break; NEW=""; sleep 1; done
-SECS=$(( $(date +%s)-T0 ))
+RUNSECS=$(( $(date +%s)-T0 ))
 show kubectl get pods -l app=train
-RES=""; for t in $(seq 1 60); do RES=$(kubectl logs job/train 2>/dev/null | grep -o 'resume_from_checkpoint=[^ ]*' | tail -1); [ -n "$RES" ] && break; sleep 2; done
-say "Replacement Running after ${SECS} s, nobody involved. It reports: ${RES:-no resume line yet}"
-result "Failures" "killed training pod replaced in ${SECS} s and resumed (${RES:-unknown})"
-kubectl delete -f k8s/train-job.yaml --ignore-not-found >/dev/null 2>&1; kubectl delete pvc work --ignore-not-found >/dev/null 2>&1
+STEP=""; STEPSECS=""; for t in $(seq 1 240); do
+  STEP=$(kubectl logs "$NEW" 2>/dev/null | tr '\r' '\n' | grep -oE '[0-9]+/900' | tail -1)
+  [ -n "$STEP" ] && { STEPSECS=$(( $(date +%s)-T0 )); break; }; sleep 1; done
+RES=$(kubectl logs "$NEW" 2>/dev/null | grep -o 'resume_from_checkpoint=[^ ]*' | tail -1)
+echo "${B}Scoreboard: simulated crash, Kubernetes${R}"
+echo "  replacement pod Running:       ${RUNSECS} s"
+echo "  first training step after it:  ${STEPSECS:-not seen} s (this is the headline number), $RES, nobody involved"
+echo "  serving (measured earlier):    answering again in 77 to 81 s with nobody there; a person restarting by hand takes 28 s"
+echo "  users during a tiny-pod kill (measured earlier): 39 of 40 requests OK, 6 of 6 ready again in 72 s"
+note "Recovery time is mostly model startup, the same on both paths. The difference is that nobody has to be there."
+result "Failures" "simulated crash: first training step ${STEPSECS:-?} s after the delete, resumed (${RES:-unknown}), no person involved"
+kubectl delete -f k8s/train-job.yaml --ignore-not-found >/dev/null 2>&1
 pause
 
 step 3 "Watching"
@@ -85,7 +95,7 @@ step 5 "Setting up"
 fix "One Helm install of the NVIDIA GPU Operator. It discovers the GPU, labels the node, runs the device plugin and the metrics exporter."
 show helm list -n gpu-operator
 show kubectl get pods -n gpu-operator
-say "GPUs Kubernetes can schedule: $(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')"
+say "GPUs Kubernetes can schedule: $(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')"
 show bash -c "kubectl get node -o json | jq -r '.metadata.labels | to_entries[] | select(.key|test(\"nvidia.com/(gpu.product|gpu.memory|cuda.driver-version.full)\")) | \"  \" + .key + \" = \" + .value'"
 note "The driver and container toolkit come from the host. The Operator does not install them here."
 result "Setting up" "one Helm install; GPU found and labeled automatically; same manifests on WSL2 and native Ubuntu"
@@ -95,9 +105,9 @@ step 6 "Growing"
 fix "A new machine joins the cluster with one command, and the scheduler places pods on it."
 show kubectl get nodes
 IP=$(hostname -I | awk '{print $1}')
-say "On the new machine (not run, not tested here, we have one node):"
+say "On the new machine (not run in this script; scripts/demo/vm-grow.sh does it live with VMs):"
 say "  curl -sfL https://get.k3s.io | K3S_URL=https://$IP:6443 K3S_TOKEN=<token from /var/lib/rancher/k3s/server/node-token> sh -"
-result "Growing" "not tested: one node. Join command shown, not run"
+result "Growing" "join command shown here; the live run is scripts/demo/vm-grow.sh: 3 VMs joined one at a time, node Ready in 65 to 86 s, 13.2 then 18.5 then 21.2 requests/s (CPU replicas, not GPU)"
 
 
 summary "Kubernetes + NVIDIA"

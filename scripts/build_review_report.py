@@ -75,9 +75,9 @@ SIX = [
  ("Sharing", "One job blocks the GPU", "Jobs share it",
   "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 38% for one model alone vs 93% with six sharing the card (same traffic per model), and all six answered in about 0.4 s. MPS added per-pod memory limits.", "Proven"),
  ("Failures", "Someone gets a message", "It restarts itself",
-  "Training killed: by hand it stays dead (finished by a person in 325 s); on Kubernetes training again in about 51 s from its last checkpoint. Serving killed: by hand stays dead; on Kubernetes answering again in 77 to 81 s. A tiny-model pod: 72 s. Repeated in two full rehearsals (28 of 28 checks each).", "Proven"),
+  "Simulated crash (kill -9 by hand; pod deleted on Kubernetes). Training: by hand it stays dead until a person reruns it (finishing took 325 s); on Kubernetes the first training step is back about 51 s after the delete from its last checkpoint with nobody involved. Serving: a person restarting by hand answers in 28 s; Kubernetes answered in 77 to 81 s with nobody there. Tiny-model pod kill: 39 of 40 requests OK and 6 of 6 ready in 72 s. Recovery time is mostly model startup. Two full rehearsals (28 of 28 checks each).", "Proven"),
  ("Growing", "Rebuild a machine", "Add a machine",
-  "Not tested. We only had one node. Nothing here is measured.", "Not tested"),
+  "Added 3 worker VMs (Multipass) one at a time to the running cluster. Node Ready 65 s then 66 s then 86 s after launch and the model serving 73 to 95 s after launch. Each node ran one CPU copy of the smallest model: 13.2 then 18.5 then 21.2 requests/s (60 of 60 OK each time; 1.4x and 1.6x the single VM, not linear). CPU replicas not GPU: the GPU stays on the host and the VMs have no GPU. The container image and k3s binary were preloaded from local files because downloads were slow (a cold image pull took 8 min). Single runs.", "Proven"),
  ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
   "Kubernetes is a standard API, so the same manifests apply on any conformant cluster: on-premises or in any cloud. We moved the same stack between two different hosts (WSL2 and native Ubuntu) with 0 changed lines in 4 manifests. Not run on another cloud.", "By design"),
 ]

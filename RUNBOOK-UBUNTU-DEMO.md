@@ -16,7 +16,7 @@ Docker needs the `docker` group. If `docker ps` says permission denied, log out 
 ```bash
 nvidia-smi --query-gpu=name,driver_version,memory.used --format=csv     # RTX 4070, 590.48.01, under 1000 MiB used
 kubectl get nodes                                                       # Ready
-kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 1
+kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 1
 kubectl get pods -n gpu-operator --no-headers | awk '{print $1,$2,$3}'  # Running or Completed
 curl -s localhost:5000/v2/_catalog                                      # gpu-serve and gpu-train
 curl -s -o /dev/null -w "grafana HTTP %{http_code}\n" localhost:30300/login   # 200
@@ -34,7 +34,7 @@ kubectl delete -f k8s/serve-deployment.yaml -f k8s/train-job.yaml -f k8s/train-s
 kubectl delete pvc work --ignore-not-found                              # fresh checkpoints and a cold model download in the pod
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type json -p '[{"op":"remove","path":"/spec/devicePlugin/config"}]' 2>/dev/null   # time slicing off
 kubectl delete -f k8s/time-slicing-config.yaml -f k8s/mps-config.yaml --ignore-not-found
-kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # must print 1 (wait up to 30 s)
+kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # must print 1 (wait up to 30 s)
 ```
 Do not run the `pkill` line as part of a longer line containing `scripts/train.py` text, it kills its own shell. The bracket form `'[v]llm serve'` is safe on its own.
 
@@ -96,7 +96,7 @@ kubectl get pods                                                        # serve-
 kubectl describe pod -l app=serve-small | grep -A3 Events               # Insufficient nvidia.com/gpu
 kubectl apply -f k8s/time-slicing-config.yaml
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-config","default":"any"}}}}'
-kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 4
+kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 4
 until curl -s localhost:30081/v1/models | grep -q 0.5B; do sleep 2; done; echo small model up   # about 60 to 90 s
 PORT=30080 scripts/ask.sh tuned "Give three tips for staying focused."
 PORT=30081 scripts/ask.sh Qwen/Qwen2.5-0.5B-Instruct "Give three tips for staying focused."
@@ -109,14 +109,14 @@ Run this with the serve pods deleted (`kubectl delete -f k8s/serve-small.yaml -f
 # control: time slicing, steady CANNOT grow
 kubectl apply -f k8s/time-slicing-config.yaml
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-config","default":"any"}}}}'
-until [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 4 ]; do sleep 3; done
+until [ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 4 ]; do sleep 3; done
 kubectl apply -f k8s/mps-memtest.yaml; sleep 110
 kubectl logs mem-greedy | grep -E "sees|stopped"; kubectl logs mem-steady | grep -E "sees|holds|GREW|NOT"   # steady: could NOT grow, OutOfMemoryError
 kubectl delete -f k8s/mps-memtest.yaml
 # MPS: each pod has its own memory limit, steady CAN grow
 kubectl apply -f k8s/mps-config.yaml
 kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"mps-config","default":"any"}}}}'
-until [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 2 ]; do sleep 3; done   # about 40 s
+until [ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')" = 2 ]; do sleep 3; done   # about 40 s
 kubectl apply -f k8s/mps-memtest.yaml; sleep 110
 kubectl logs mem-greedy | grep -E "sees|stopped"; kubectl logs mem-steady | grep -E "sees|holds|GREW|NOT"      # greedy stops at 5 GiB, steady GREW by 2 GiB: OK
 kubectl delete -f k8s/mps-memtest.yaml
@@ -144,7 +144,7 @@ kubectl describe pod <name> | tail -20
 kubectl logs <pod> --tail=30
 nvidia-smi                                                              # GPU still used by a leftover process?
 pgrep -af '[v]llm serve|[s]cripts/train.py'                             # leftover traditional processes
-kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 0 means the device plugin lost the GPU
+kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'; echo   # 0 means the device plugin lost the GPU
 ```
 A deleted GPU pod stays Terminating for up to about 60 s and holds the GPU, so its replacement waits Pending until then. This is normal, not a bug.
 
@@ -160,7 +160,7 @@ Do NOT run the GPU Operator with `toolkit.enabled=true`. On this k3s host it rep
 ```bash
 sudo bash scripts/recover_after_toolkit_test.sh
 ```
-Then check `kubectl get node`, `kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'`, and that `/usr/local/nvidia` does not exist. `driver.enabled=true` is harmless here (the Operator detects the host driver and installs nothing), but also shows nothing, skip it.
+Then check `kubectl get node`, `kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}'`, and that `/usr/local/nvidia` does not exist. `driver.enabled=true` is harmless here (the Operator detects the host driver and installs nothing), but also shows nothing, skip it.
 
 ## 11. Setting up another Ubuntu machine
 `bash scripts/bootstrap.sh check` (read-only), then `bash scripts/bootstrap.sh sudo` prints the one sudo block to run yourself, then `bash scripts/bootstrap.sh all` (user tools, Operator with installers OFF, Grafana, registry, image builds, models, verify). Each stage can be run alone and re-run. Verified only as a re-run on the machine it was written on (29 of 29 checks); the fresh install paths (pip, helm, image builds, Operator install) were not run from scratch. Write numbers for a new machine to its own branch and results file.

@@ -22,7 +22,7 @@ trainpid() { pgrep -f '[.]venv-trad/bin/python scripts/train.py'; }
 phase "1. Pre-flight"
 check "GPU visible (RTX 4070)" bash -c 'nvidia-smi --query-gpu=name --format=csv,noheader | grep -q 4070'
 check "node Ready" bash -c 'kubectl get nodes --no-headers | grep -qw Ready'
-check "1 allocatable GPU (no sharing active)" bash -c '[ "$(kubectl get node -o jsonpath="{.items[0].status.allocatable.nvidia\.com/gpu}")" = 1 ]'
+check "1 allocatable GPU (no sharing active)" bash -c '[ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath="{.items[0].status.allocatable.nvidia\.com/gpu}")" = 1 ]'
 check "Operator pods healthy" bash -c '! kubectl get pods -n gpu-operator --no-headers | awk "\$3!=\"Running\"&&\$3!=\"Completed\"" | grep -q .'
 check "registry has gpu-train and gpu-serve" bash -c 'curl -s localhost:5000/v2/_catalog | grep -q gpu-serve && curl -s localhost:5000/v2/_catalog | grep -q gpu-train'
 check "Grafana answers" bash -c '[ "$(curl -s -o /dev/null -w "%{http_code}" localhost:30300/login)" = 200 ]'

@@ -185,3 +185,18 @@ Same six-pod setup as above (`k8s/serve-tiny.yaml`, time slicing x8). `CLIENTS` 
 - Six models sharing the card reach 93% GPU busy at moderate traffic; one model alone at the same per-model setting is 38% busy. The card stays at 93% as traffic grows, and answer time rises (396 to 562 ms mean).
 - GPU busy is not useful work. At saturation one copy alone delivers about the same total requests per second as six sharing (40.5 vs 41.9), so sharing adds no throughput there. At the moderate level the six models together completed 11.9 req/s while the card showed 93% busy, whereas one copy at 92% busy completed 40.5 req/s: time slicing pays switching cost. The honest benefit of sharing is fitting several different models on one card, not more work per card.
 - The lightest level varied between runs (49 to 71%) because of where the 2 s samples fell relative to the load; use the moderate level (93%, both sweeps) for a stable number.
+
+
+## Growing: worker VMs joined one at a time (CPU replicas, not GPU)
+Run: `bash scripts/demo/vm-grow.sh 3` (log `logs/demo_vm_run5.log`). Multipass VMs (2 vCPU, 3 GB each) join the running k3s cluster; one CPU-only copy of SmolLM2-135M (Q8_0 GGUF, llama.cpp server) per VM, `k8s/serve-cpu.yaml`. Load: 60 requests, 8 at a time, only HTTP 200 counted. Single run. The GPU stays on the host node; the VMs have no GPU, so this says nothing about GPU capacity.
+
+| VMs | Node Ready after launch | Model serving after launch | Requests OK | Requests/s |
+|---|---|---|---|---|
+| 1 | 65 s | 73 s | 60 of 60 | 13.2 |
+| 2 | 66 s | 74 s | 60 of 60 | 18.5 |
+| 3 | 86 s | 95 s | 60 of 60 | 21.2 |
+
+- Scaling is sub-linear (1.4x with 2 VMs, 1.6x with 3). Cause not investigated (shared host cores, one NodePort entry point, or load imbalance are possible).
+- The k3s binary, the llama.cpp image (310 MB tar) and the model file were copied into each VM from local files. Cold, a single image pull took about 8 min and the k3s download from GitHub stalled, because downloads were slow that day. The 65 to 95 s figures exclude that.
+- An earlier attempt (run 3) printed 2278 requests/s because failed requests were counted; that number is invalid and the script now counts only HTTP 200.
+- Multipass could not download its own Ubuntu image on this machine (cause unknown), so the VMs launch from a local cloud image.

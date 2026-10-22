@@ -99,8 +99,8 @@ do_cluster() {
       --set 'dcgmExporter.env[0].name=DCGM_EXPORTER_INTERVAL' --set-string 'dcgmExporter.env[0].value=1000' >/dev/null
   else note "already installed"; fi
   local t=$(date +%s)
-  for i in $(seq 1 120); do [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}' 2>/dev/null)" = 1 ] && break; sleep 3; done
-  [ "$(kubectl get node -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}' 2>/dev/null)" = 1 ] \
+  for i in $(seq 1 120); do [ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}' 2>/dev/null)" = 1 ] && break; sleep 3; done
+  [ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}' 2>/dev/null)" = 1 ] \
     && ok "node advertises nvidia.com/gpu: 1 ($(( $(date +%s) - t )) s wait)" \
     || bad "nvidia.com/gpu never appeared: kubectl get pods -n gpu-operator; kubectl describe node | grep -i nvidia"
   stage "cluster: Grafana and Prometheus"
@@ -145,7 +145,7 @@ do_verify() {
   stage "verify"
   chk "GPU visible" nvidia-smi -L
   chk "node Ready" bash -c 'kubectl get nodes --no-headers | grep -qw Ready'
-  chk "1 allocatable GPU (no sharing active)" bash -c '[ "$(kubectl get node -o jsonpath="{.items[0].status.allocatable.nvidia\.com/gpu}")" = 1 ]'
+  chk "1 allocatable GPU (no sharing active)" bash -c '[ "$(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath="{.items[0].status.allocatable.nvidia\.com/gpu}")" = 1 ]'
   chk "Operator pods healthy" bash -c '! kubectl get pods -n gpu-operator --no-headers | awk "\$3!=\"Running\"&&\$3!=\"Completed\"" | grep -q .'
   chk "registry has gpu-train and gpu-serve" bash -c 'curl -s localhost:5000/v2/_catalog | grep -q gpu-train && curl -s localhost:5000/v2/_catalog | grep -q gpu-serve'
   chk "Grafana answers" bash -c '[ "$(curl -s -o /dev/null -w "%{http_code}" localhost:30300/login)" = 200 ]'

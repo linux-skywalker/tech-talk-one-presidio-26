@@ -28,13 +28,16 @@ result "Sharing" "$UP of 6 up all at once; 5 of 6 one at a time (257 s); failed 
 pause
 
 step 2 "Failures"
-problem "A training run dies (here: kill -9 at a checkpoint). Nothing notices."
+problem "A training run dies. We simulate the crash with kill -9 at a checkpoint. Nothing notices."
 EPOCHS=9 python scripts/train.py --out outputs/demo_trad > logs/demo_trad_train.log 2>&1 &
 for t in $(seq 1 300); do [ -d outputs/demo_trad/checkpoint-75 ] && break; pgrep -f '[t]rain.py' >/dev/null || break; printf '\r  training... %ss ' $t; sleep 1; done; echo
 LAST=$(ls outputs/demo_trad 2>/dev/null | grep checkpoint | sort -t- -k2 -n | tail -1)
 show pkill -9 -f '[t]rain.py'; sleep 20
 if pgrep -f '[t]rain.py' >/dev/null; then say "training is running again"; else say "${RED}20 s later: no training process. Nothing restarted it.${R} Last checkpoint on disk: $LAST"; fi
-note "A person has to notice, log in and rerun the command."
+note "A person has to notice, log in and rerun the command. A retry loop would be code you write and maintain."
+echo "${B}Scoreboard: simulated crash, traditional${R}"
+echo "  training: stays dead until a person reruns it; the manual resume finished the remaining steps in 325 s   (measured earlier)"
+echo "  serving:  stays dead; a person at the keyboard restarts it and it answers in 28 s (warm)   (measured earlier)"
 rm -rf outputs/demo_trad; wait_gpu_free
 result "Failures" "killed training stayed dead (checkpoint $LAST on disk, nothing restarted it)"
 pause

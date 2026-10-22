@@ -45,7 +45,7 @@
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 51 s training, 77 s serving\n\n**Traditional:** Stays dead until a person acts\n\n**Kubernetes + NVIDIA:** Killed pods come back with nobody involved. Training resumes from its last checkpoint."
+    "content": "### back in ~51 s, no person\n\n**Traditional:** Stays dead until a person acts\n\n**Kubernetes + NVIDIA:** Simulated crash: training is back about 51 s after the delete from its last checkpoint, nobody involved. Serving: 77 to 81 s (28 s if a person restarts it by hand). 39 of 40 requests OK during a pod kill."
    },
    "fieldConfig": {
     "defaults": {
@@ -141,17 +141,17 @@
   {
    "id": 6,
    "type": "text",
-   "title": "6 Growing  |  NOT TESTED",
+   "title": "6 Growing  |  PROVEN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### Not measured\n\n**Traditional:** Rebuild a machine\n\n**Kubernetes + NVIDIA:** We had one node. Adding a node is the next step."
+    "content": "### VM added in ~65 s\n\n**Traditional:** Rebuild a machine\n\n**Kubernetes + NVIDIA:** 3 VMs joined one at a time, node Ready in 65 to 86 s, pods placed on them automatically. 13.2 then 18.5 then 21.2 requests/s (CPU replicas, not GPU)."
    },
    "fieldConfig": {
     "defaults": {
      "color": {
       "mode": "fixed",
-      "fixedColor": "orange"
+      "fixedColor": "green"
      }
     },
     "overrides": []

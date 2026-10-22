@@ -21,6 +21,8 @@ spec:
         - {name: MODEL, value: HuggingFaceTB/SmolLM2-135M-Instruct}
         - {name: ADAPTER, value: /none}
         - {name: GPU_UTIL, value: "0.1"}
+        volumeMounts:
+        - {name: work, mountPath: /work}
         ports:
         - containerPort: 8000
         readinessProbe:
@@ -33,6 +35,9 @@ spec:
         resources:
           limits:
             nvidia.com/gpu: 1
+      volumes:
+      - name: work
+        persistentVolumeClaim: {claimName: work}
 ---
 apiVersion: v1
 kind: Service
