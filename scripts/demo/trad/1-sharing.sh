@@ -34,8 +34,8 @@ if [ -n "$SEQ" ]; then
 else SEQLINE="5 of 6 up in 257 s, the 2nd failed and nothing retried (measured earlier, results-ubuntu-4070.md)"; fi
 killprocs 'vllm serve'; wait_gpu_free
 echo "${B}Scoreboard: 6 models on 1 GPU, traditional${R}"
-echo "  all at once, by hand:      $UP of 6 up"
 echo "  one at a time, by script:  $SEQLINE"
+echo "  all at once, by hand:      $UP of 6 up   (the naive attempt)"
 echo "  one card per model:        6 models need 6 cards, each about 14% busy at light traffic (measured alone)"
 echo "  retry on failure:          none; you find out by looking"
 result "Sharing" "$UP of 6 up all at once; $SEQLINE; nothing retries failures"
