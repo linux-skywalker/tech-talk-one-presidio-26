@@ -20,8 +20,10 @@
  "pods_failed": 0,
  "pods_with_oom": 0,
  "restarts_serve": 0,
- "evictions": 0,
- "evicted_reasons": [],
+ "preempted_workloads": [
+  "job-t1-8ed72"
+ ],
+ "evictions": 1,
  "gpu_util_avg": 88,
  "gpu_mem_max_mib": 9204,
  "dcgm_avg_util": 89,

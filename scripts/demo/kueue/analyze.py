@@ -56,8 +56,9 @@ m["pods_failed"] = sum(p["_fail"] for p in pods); m["pods_with_oom"] = oom
 m["restarts_serve"] = sum((p["status"].get("containerStatuses") or [{}])[0].get("restartCount", 0) for p in pods if p["_n"] == "serve")
 try:
     wl = json.load(open(f"{run}/workloads.json"))["items"]
-    m["evictions"] = sum(1 for w in wl for c in w.get("status", {}).get("conditions", []) if c["type"] == "Evicted" and c["status"] == "True")
-    m["evicted_reasons"] = sorted({c.get("reason") for w in wl for c in w.get("status", {}).get("conditions", []) if c["type"] == "Evicted" and c["status"] == "True"})
+    pre = lambda c: c["type"] in ("Evicted", "Preempted") and (c["status"] == "True" or "Preempted" in c.get("message", ""))
+    m["preempted_workloads"] = sorted(w["metadata"]["name"] for w in wl if any(pre(c) for c in w.get("status", {}).get("conditions", [])))
+    m["evictions"] = len(m["preempted_workloads"])
 except Exception: m["evictions"] = None
 if samples:
     u = [float(s["util"]) for s in samples]; mem = [float(s["mem_mib"]) for s in samples]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One scenario run. usage: bash scripts/demo/kueue/run.sh <s1|s2|s3> <plain|units|kueue|kueue-nopreempt> <rep>
 # s1: serve + 2 training jobs submitted together.  s2: GPU full of batch work, then inference arrives (priority + preemption).
-# s3: team A floods the queue, team B submits two jobs later.  Raw data goes to logs/kueue/<s>_<arm>_<rep>/.
+# s4: team A's batch jobs are RUNNING when inference arrives (preemption test).  s3: team A floods the queue, team B submits two jobs later.  Raw data goes to logs/kueue/<s>_<arm>_<rep>/.
 SC=$1; ARM=$2; REP=${3:-1}; export ARM
 source "$(dirname "$0")/lib.sh"
 RUNID=$(date +%H%M%S)-$SC-$ARM-$REP; RUN=logs/kueue/${SC}_${ARM}_${REP}; rm -rf "$RUN"; mkdir -p "$RUN"; export RUNID RUN
@@ -15,6 +15,9 @@ case $SC in
  s1) submit_serve team-a inference; submit_train t1 team-a trainm batch; submit_train t2 team-b trainm batch; NJOBS=2;;
  s2) submit_train t1 team-a trainm batch; submit_train t2 team-b trainm batch; submit_train sm1 team-b trains batch; sleep 35
      submit_serve team-a inference; NJOBS=3;;
+ s4) submit_train t1 team-a trainm batch; submit_train t2 team-a trainm batch   # batch work fills the GPU, then inference arrives
+     for i in $(seq 1 120); do [ "$(kubectl get pods -n team-a -l app=kq-train --no-headers 2>/dev/null | grep -c Running)" = 2 ] && break; sleep 1; done
+     sleep 12; tl "both batch jobs running; inference arrives now"; submit_serve team-a inference; NJOBS=2;;
  s3) for i in 1 2 3 4 5; do submit_train a$i team-a trainm batch; done; sleep 25
      for i in 1 2; do submit_train b$i team-b trainm batch; done; NJOBS=7;;
 esac

@@ -1,0 +1,44 @@
+=== s4 / kueue-nopreempt / run 1 (021706-s4-kueue-nopreempt-1) ===
+  [02:17:11 +  0s] submitted t1 (trainm, team a, 3 units)
+  [02:17:11 +  0s] submitted t2 (trainm, team a, 3 units)
+  [02:17:24 + 13s] both batch jobs running; inference arrives now
+  [02:17:24 + 13s] submitted serve (team a, 3 units, priority inference)
+  [02:17:47 + 36s] jobs done 0, failed 0 of 2; SchedulingGated=1  GPU busy 94 %, mem 8748 MiB, power 168.30 W, temp 57 C
+  [02:18:11 + 60s] jobs done 0, failed 0 of 2; SchedulingGated=1  GPU busy 100 %, mem 8780 MiB, power 167.79 W, temp 59 C
+  [02:18:35 + 84s] jobs done 0, failed 0 of 2; SchedulingGated=1  GPU busy 100 %, mem 8748 MiB, power 169.87 W, temp 60 C
+  [02:18:59 +108s] jobs done 0, failed 0 of 2; SchedulingGated=1  GPU busy 100 %, mem 8748 MiB, power 171.82 W, temp 62 C
+  [02:19:23 +132s] jobs done 0, failed 0 of 2; SchedulingGated=1  GPU busy 95 %, mem 8748 MiB, power 166.49 W, temp 62 C
+  [02:19:47 +156s] jobs done 0, failed 0 of 2; SchedulingGated=1  GPU busy 100 %, mem 8748 MiB, power 172.87 W, temp 63 C
+  scenario                         s4
+  arm                              kueue-nopreempt
+  rep                              1
+  duration_s                       230
+  queue_wait_s                     {'t1': 0, 't2': 0, 'serve': 206}
+  wait_train_median_s              0
+  wait_train_max_s                 0
+  wait_team_A_max_s                0
+  wait_team_B_max_s                None
+  jobs_total                       2
+  jobs_done                        2
+  jobs_failed                      0
+  makespan_s                       170
+  jobs_per_hour                    42.4
+  pods_failed                      0
+  pods_with_oom                    0
+  restarts_serve                   0
+  evictions                        0
+  evicted_reasons                  []
+  gpu_util_avg                     71
+  gpu_mem_max_mib                  8780
+  dcgm_avg_util                    73
+  waiting_job_seconds              204
+  waiting_while_mem_below_9GB_s    204
+  waiting_while_util_below_50_s    48
+  unit_seconds_A                   1179
+  unit_seconds_B                   0
+  share_A_pct                      100
+  probe_ok                         6
+  probe_err                        0
+  ttft_p50_s                       0.012
+  ttft_p95_s                       0.035
+  latency_p95_s                    0.501

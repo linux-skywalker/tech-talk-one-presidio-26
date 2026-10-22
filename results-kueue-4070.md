@@ -41,23 +41,37 @@ Reading, with limits:
 - The memory-shaped units are our own convention. Without them, Kueue's quota on raw replica counts would not know memory.
 - Not measured: how much of the gain comes from Kueue versus the memory-shaped requests alone (the "units" arm was dropped).
 
-## Scenario 2: GPU busy with batch work, then inference arrives (Kueue with preemption, single run)
-Submitted: team A training t1, team B training t2 and small job sm1, then 36 s later the inference server (team A, priority 1000).
-| Measure (single run) | Kueue, preemption allowed |
+## Scenario 2 (first attempt): batch jobs and inference submitted close together, Kueue with preemption (single run)
+Submitted: team A t1, team B t2 and sm1, then 36 s later the inference server (team A, priority 1000).
+| Measure (single run) | Kueue |
 |---|---|
 | Server first answered | 87 s after t0 (about 51 s after it was submitted) |
 | Training wait: t1 (team A) / t2 / sm1 (team B) | 144 / 0 / 0 s |
 | All 3 batch jobs finished | 270 s |
 | GPU busy, average (DCGM) | 93% |
-| Peak GPU memory | 10436 MiB |
-| Evictions (preemptions) | 0 |
+| Peak GPU memory | 9995 to 10436 MiB |
 | Out-of-memory pods, server restarts | 0, 0 |
 | Server p95 full-reply latency | 1.08 s |
 
-**Preemption was not exercised in this run.** Team A's t1 was never running when the server arrived: Kueue had admitted team B's jobs first (they were inside team B's own quota), so t1 was still queued. The server took t1's place in the queue without evicting anything, and t1 waited 144 s. So this run shows priority ordering at admission, not an eviction. Only a rerun where the low-priority job is already running when inference arrives can show preemption (for example submit t1 first and wait until it runs). Not done, and no "with versus without preemption" comparison exists. The plain and no-preemption arms of Scenario 2 and the flood scenario (3) were not run (run count cut by request).
+CORRECTION to an earlier version of this file: it said no preemption happened here. That was wrong. The Workload record of t1 shows `Requeued: Preempted to accommodate a workload ... due to priority`. My first metric only counted evictions whose status was still True, and t1 had already been re-admitted. This run did not capture whether t1's pod had started before it was preempted, so it is not a clean preemption test. The same record shows t1 preempted in Scenario 1 ("due to reclamation": team B took back its own quota from team A's borrowed units).
 
-## What we can claim so far
-- Scenario 1 (n=1 each): Kueue kept the inference server up (56 s versus 208 s with 4 restarts on the plain setup) and raised average GPU busy (89% versus 76%), at the cost of a later batch finish (236 s versus 169 s).
-- Scenario 2 (n=1): inference was admitted ahead of the waiting batch job. No preemption was observed.
+## Scenario 4: batch work already RUNNING when inference arrives (single runs, clean preemption test)
+Team A submits two training jobs (3 units each, 6 of 8 units). After both are Running, inference (3 units, priority 1000) arrives at about 13 s.
+| Measure (single run each) | Kueue, preemption off | Kueue, preemption on |
+|---|---|---|
+| Server first answered (after t0) | 206 s | 87 s |
+| Batch jobs finished | 2 of 2, both at 170 s | 2 of 2, all done at 238 s |
+| What happened | server waited for the batch jobs (SchedulingGated) | Kueue preempted `t2` to admit the server; `t2` was re-admitted later |
+| Preempted workloads | 0 | 1 (`t2`, message "due to priority") |
+| GPU busy, average (DCGM) | 73% | 87% |
+| Server answers recorded | 6 | 100 |
+| Server p95 full-reply latency | 0.50 s (barely under load) | 1.07 s (under training load) |
+| Out-of-memory pods, server restarts | 0, 0 | 0, 0 |
+
+Limits: `t2`'s 112 s queue wait in the summary is for its restarted pod. Whether it resumed from a checkpoint was not captured (pod logs were not kept). The tool counted preemptions wrongly before the fix in `analyze.py`; all summaries were regenerated with the corrected count.
+
+## What we can claim so far (single runs, no spread)
+- Scenario 1: Kueue kept the inference server up (56 s versus 208 s and 4 restarts on the plain setup) and raised average GPU busy (89% versus 76%), at the cost of a later batch finish (236 s versus 169 s).
+- Scenario 4: with preemption on, inference answered at 87 s instead of 206 s while the batch work was running; the price was one training job being preempted and re-run (batch finished 68 s later).
 ## What we cannot claim
-- Any spread or average (single runs). Any latency win. How much is Kueue versus the memory-shaped requests. Anything about DRA or mock devices (not run), MIG, other GPUs or fairness under a flood.
+- Any average or spread. Any latency win. How much is Kueue versus the memory-shaped requests. Anything about DRA or mock devices (not run yet), MIG, other GPUs or fairness under a flood (Scenario 3 not run). Preempted-job lost work.
