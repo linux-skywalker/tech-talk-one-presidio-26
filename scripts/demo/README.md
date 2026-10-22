@@ -17,3 +17,7 @@ Notes
 - `all-in-one`: `trad.sh` and `kube.sh` run the whole sequence once (older, shorter versions of the same steps).
 - Numbers are single runs on one RTX 4070 (native Ubuntu). Things marked "measured earlier" are printed from `results-ubuntu-4070.md`, not re-run.
 - Growing needs `~/.k3s-node-token`, `~/multipass-images/` (Ubuntu cloud image, k3s binary, llama.cpp image tar, GGUF model) and Multipass. See `vm-grow.sh`.
+
+Video decisions (user)
+- Growing is told mostly as theory in the Remotion video. The live Growing scripts (`trad/6-growing.sh`, `kube/6-growing.sh`) stay as an optional short clip and as proof that nodes join; label it CPU replicas, by design.
+- Sharing also covers MIG as theory in Remotion (three ways to share: time slicing, MPS, MIG), from `MIG-THEORY.md`. MIG was not run: the RTX 4070 has no MIG.
