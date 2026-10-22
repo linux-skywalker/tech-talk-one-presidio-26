@@ -1,0 +1,13 @@
+trad/1-sharing exit=0 27s
+trad/2-failures exit=0 97s
+trad/3-watching exit=0 41s
+trad/4-moving exit=0 3s
+trad/5-setting-up exit=0 158s
+trad/6-growing exit=0 0s
+kube/1-sharing exit=1 384s
+kube/2-failures exit=1 0s
+kube/3-watching exit=1 0s
+kube/4-moving exit=0 1s
+kube/6-growing exit=0 137s
+kube/5-setting-up exit=0 57s
+DONE

@@ -2,7 +2,7 @@
 # The six metrics, traditional way (plain Python and vLLM on the host, no Kubernetes). Shows the problem at each step.
 # usage: bash scripts/demo/trad.sh        (Enter between steps; AUTO=1 to run straight through). About 5 minutes.
 source "$(dirname "$0")/common.sh"
-if pgrep -f '[v]llm serve' >/dev/null || pgrep -f '[t]rain.py' >/dev/null || ! gpu_free; then
+if [ "$(nprocs 'vllm serve')" != 0 ] || [ "$(nprocs 'train[.]py')" != 0 ] || ! gpu_free; then
   echo "${RED}GPU is busy.${R} Stop other vLLM/training processes first (and delete Kubernetes workloads)."; exit 1; fi
 rm -rf outputs/demo_trad
 
@@ -15,11 +15,11 @@ for i in 1 2 3 4 5 6; do
 done
 UP=0; for t in $(seq 1 60); do
   UP=0; for i in 1 2 3 4 5 6; do curl -s localhost:$((8100+i))/v1/models | grep -q SmolLM2 && UP=$((UP+1)); done
-  ALIVE=$(pgrep -fc '[v]llm serve'); [ "$UP" = 6 ] || [ "$ALIVE" = 0 ] && break; printf '\r  %ss: %s up, %s processes alive ' $((t*2)) $UP $ALIVE; sleep 2; done; echo
-say "Servers answering: $UP of 6. Processes still alive: $(pgrep -fc '[v]llm serve')"
+  ALIVE=$(nprocs 'vllm serve'); [ "$UP" = 6 ] || [ "$ALIVE" = 0 ] && break; printf '\r  %ss: %s up, %s processes alive ' $((t*2)) $UP $ALIVE; sleep 2; done; echo
+say "Servers answering: $UP of 6. Processes still alive: $(nprocs 'vllm serve')"
 grep -h "No available memory" logs/demo_trad_tiny*.log | sed "s/.*ValueError/ValueError/" | cut -c1-110 | sort | uniq -c | head -1
 note "Nobody restarts the ones that died. You find out by looking."
-pkill -f '[v]llm serve'; wait_gpu_free
+killprocs 'vllm serve'; wait_gpu_free
 echo "${B}Scoreboard: 6 models on 1 GPU, traditional${R}"
 echo "  all at once, by hand:        $UP of 6 up   (this run)"
 echo "  one at a time, by script:    5 of 6 up in 257 s, the 2nd failed and nothing retried   (measured earlier, results-ubuntu-4070.md)"
@@ -30,10 +30,10 @@ pause
 step 2 "Failures"
 problem "A training run dies. We simulate the crash with kill -9 at a checkpoint. Nothing notices."
 EPOCHS=9 python scripts/train.py --out outputs/demo_trad > logs/demo_trad_train.log 2>&1 &
-for t in $(seq 1 300); do [ -d outputs/demo_trad/checkpoint-75 ] && break; pgrep -f '[t]rain.py' >/dev/null || break; printf '\r  training... %ss ' $t; sleep 1; done; echo
+for t in $(seq 1 300); do [ -d outputs/demo_trad/checkpoint-75 ] && break; [ "$(nprocs 'train[.]py')" != 0 ] || break; printf '\r  training... %ss ' $t; sleep 1; done; echo
 LAST=$(ls outputs/demo_trad 2>/dev/null | grep checkpoint | sort -t- -k2 -n | tail -1)
-show pkill -9 -f '[t]rain.py'; sleep 20
-if pgrep -f '[t]rain.py' >/dev/null; then say "training is running again"; else say "${RED}20 s later: no training process. Nothing restarted it.${R} Last checkpoint on disk: $LAST"; fi
+echo "${YEL}\$ pkill -9 -f train.py${R}"; killprocs 'train[.]py' KILL; sleep 20
+if [ "$(nprocs 'train[.]py')" != 0 ]; then say "training is running again"; else say "${RED}20 s later: no training process. Nothing restarted it.${R} Last checkpoint on disk: $LAST"; fi
 note "A person has to notice, log in and rerun the command. A retry loop would be code you write and maintain."
 echo "${B}Scoreboard: simulated crash, traditional${R}"
 echo "  training: stays dead until a person reruns it; the manual resume finished the remaining steps in 325 s   (measured earlier)"

@@ -3,7 +3,7 @@
 # usage: bash scripts/demo/kube.sh        (Enter between steps; AUTO=1 to run straight through; SHARE_N=3 for fewer models). About 12 minutes with 6 models.
 source "$(dirname "$0")/common.sh"
 N=${SHARE_N:-6}
-if pgrep -f '[v]llm serve' >/dev/null || pgrep -f '[t]rain.py' >/dev/null || ! gpu_free; then
+if [ "$(nprocs 'vllm serve')" != 0 ] || [ "$(nprocs 'train[.]py')" != 0 ] || ! gpu_free; then
   echo "${RED}GPU is busy.${R} Stop the traditional-path processes first."; exit 1; fi
 cleanup_sharing() {
   kubectl delete -f k8s/serve-tiny-ports.yaml -f k8s/serve-tiny.yaml --ignore-not-found --wait=true >/dev/null 2>&1
