@@ -16,8 +16,8 @@ COLS = [
   "One card per model: 6 cards, each about 14% busy at light traffic. Started together by hand: 0 of 6 up.", "6 models on 1 card: 49 to 71% busy at light traffic, 93% at moderate. 6 of 6 ready, 0 restarts. Price: answers 214 to 396 ms instead of 81 ms."),
  ("4 Failures", "PROVEN", "back in ~51 s, no person",
   "Stays dead until a person acts", "Simulated crash: training is back about 51 s after the delete from its last checkpoint, nobody involved. Serving: 77 to 81 s (28 s if a person restarts it by hand). 39 of 40 requests OK during a pod kill."),
- ("5 Growing", "PROVEN", "VM added in ~65 s",
-  "Rebuild a machine", "3 VMs joined one at a time, node Ready in 65 to 86 s, pods placed on them automatically. 13.2 then 18.5 then 21.2 requests/s (CPU replicas, not GPU)."),
+ ("5 Growing", "BY DESIGN", "Node joins in ~65 s",
+  "Rebuild a machine", "3 CPU-only VMs joined one at a time and got pods automatically. The GPU Operator gave them no GPU parts (no GPU). A GPU node would get them by design. Not tested: one GPU."),
  ("6 Moving", "BY DESIGN", "0 changed lines",
   "Rewrite for each cloud", "Kubernetes is a standard API. The same manifests ran on two different hosts."),
 ]

@@ -107,7 +107,7 @@ show kubectl get nodes
 IP=$(hostname -I | awk '{print $1}')
 say "On the new machine (not run in this script; scripts/demo/vm-grow.sh does it live with VMs):"
 say "  curl -sfL https://get.k3s.io | K3S_URL=https://$IP:6443 K3S_TOKEN=<token from /var/lib/rancher/k3s/server/node-token> sh -"
-result "Growing" "join command shown here; the live run is scripts/demo/vm-grow.sh: 3 VMs joined one at a time, node Ready in 65 to 86 s, 13.2 then 18.5 then 21.2 requests/s (CPU replicas, not GPU)"
+result "Growing" "by design: nodes join in about 65 to 86 s and get pods automatically (3 CPU-only VMs, scripts/demo/vm-grow.sh); the Operator adds GPU parts only to GPU nodes; GPU capacity not tested, one GPU"
 
 
 summary "Kubernetes + NVIDIA"

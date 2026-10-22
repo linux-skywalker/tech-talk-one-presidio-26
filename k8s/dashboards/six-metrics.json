@@ -141,17 +141,17 @@
   {
    "id": 6,
    "type": "text",
-   "title": "6 Growing  |  PROVEN",
+   "title": "6 Growing  |  BY DESIGN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### VM added in ~65 s\n\n**Traditional:** Rebuild a machine\n\n**Kubernetes + NVIDIA:** 3 VMs joined one at a time, node Ready in 65 to 86 s, pods placed on them automatically. 13.2 then 18.5 then 21.2 requests/s (CPU replicas, not GPU)."
+    "content": "### Node joins in ~65 s\n\n**Traditional:** Rebuild a machine\n\n**Kubernetes + NVIDIA:** 3 CPU-only VMs joined one at a time and got pods automatically. The GPU Operator gave them no GPU parts (no GPU). A GPU node would get them by design. Not tested: one GPU."
    },
    "fieldConfig": {
     "defaults": {
      "color": {
       "mode": "fixed",
-      "fixedColor": "green"
+      "fixedColor": "blue"
      }
     },
     "overrides": []
