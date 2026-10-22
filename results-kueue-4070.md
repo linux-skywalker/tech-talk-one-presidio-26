@@ -41,4 +41,23 @@ Reading, with limits:
 - The memory-shaped units are our own convention. Without them, Kueue's quota on raw replica counts would not know memory.
 - Not measured: how much of the gain comes from Kueue versus the memory-shaped requests alone (the "units" arm was dropped).
 
-## Scenario 2 (Kueue with preemption), Scenario 3 (flood): pending / not reported yet
+## Scenario 2: GPU busy with batch work, then inference arrives (Kueue with preemption, single run)
+Submitted: team A training t1, team B training t2 and small job sm1, then 36 s later the inference server (team A, priority 1000).
+| Measure (single run) | Kueue, preemption allowed |
+|---|---|
+| Server first answered | 87 s after t0 (about 51 s after it was submitted) |
+| Training wait: t1 (team A) / t2 / sm1 (team B) | 144 / 0 / 0 s |
+| All 3 batch jobs finished | 270 s |
+| GPU busy, average (DCGM) | 93% |
+| Peak GPU memory | 10436 MiB |
+| Evictions (preemptions) | 0 |
+| Out-of-memory pods, server restarts | 0, 0 |
+| Server p95 full-reply latency | 1.08 s |
+
+**Preemption was not exercised in this run.** Team A's t1 was never running when the server arrived: Kueue had admitted team B's jobs first (they were inside team B's own quota), so t1 was still queued. The server took t1's place in the queue without evicting anything, and t1 waited 144 s. So this run shows priority ordering at admission, not an eviction. Only a rerun where the low-priority job is already running when inference arrives can show preemption (for example submit t1 first and wait until it runs). Not done, and no "with versus without preemption" comparison exists. The plain and no-preemption arms of Scenario 2 and the flood scenario (3) were not run (run count cut by request).
+
+## What we can claim so far
+- Scenario 1 (n=1 each): Kueue kept the inference server up (56 s versus 208 s with 4 restarts on the plain setup) and raised average GPU busy (89% versus 76%), at the cost of a later batch finish (236 s versus 169 s).
+- Scenario 2 (n=1): inference was admitted ahead of the waiting batch job. No preemption was observed.
+## What we cannot claim
+- Any spread or average (single runs). Any latency win. How much is Kueue versus the memory-shaped requests. Anything about DRA or mock devices (not run), MIG, other GPUs or fairness under a flood.
