@@ -1,2 +1,13 @@
 == DRA data, mode dra-excl, 2026-10-23 02:52:41, RTX 4070, k3s v1.36.5+k3s1 ==
 (DRA, exclusive claim per job: one device; rerun with fresh output folders)
+T1 [DRA exclusive claim per job] two training jobs (SmolLM2-135M, batch 16, 2 epochs), single run: both finished after 71 s (apply to last completion)
+  a: succeeded=1  start +0 s  completed +36 s  train_runtime 
+
+
+24.81 s
+  b: succeeded=1  start +1 s  completed +70 s  train_runtime 
+
+
+25.23 s
+  GPU over 70 s: busy avg 66% max 100%, memory max 2355 MiB, power avg 126 W max 178 W, temp max 62 C
+EXIT
