@@ -1,0 +1,35 @@
+# DRA memory test (same pods as k8s/mps-memtest.yaml): two pods share ONE claim on the single RTX 4070.
+# Claim mem-ts uses time slicing, claim mem-mps uses MPS with a 5Gi pinned-memory limit per client. Run by scripts/demo/kueue/dra-extra.sh.
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaim
+metadata: {name: mem-ts}
+spec:
+  devices:
+    requests:
+    - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}
+    config:
+    - requests: ["gpu"]
+      opaque:
+        driver: gpu.nvidia.com
+        parameters:
+          apiVersion: resource.nvidia.com/v1beta1
+          kind: GpuConfig
+          sharing: {strategy: TimeSlicing, timeSlicingConfig: {interval: Long}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaim
+metadata: {name: mem-mps}
+spec:
+  devices:
+    requests:
+    - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}
+    config:
+    - requests: ["gpu"]
+      opaque:
+        driver: gpu.nvidia.com
+        parameters:
+          apiVersion: resource.nvidia.com/v1beta1
+          kind: GpuConfig
+          sharing:
+            strategy: MPS
+            mpsConfig: {defaultActiveThreadPercentage: 50, defaultPinnedDeviceMemoryLimit: 5Gi}

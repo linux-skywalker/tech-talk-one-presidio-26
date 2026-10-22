@@ -111,3 +111,26 @@ Exclusive claim per job (T1): the first attempt is INVALID. Both jobs reused the
 Exclusive claim per job, corrected rerun (T1, single run): job a finished at 36 s, job b started its training after a released the GPU and finished at 70 s; both jobs finished after 71 s (shared claim: 61 s). Each job trained in about 25 s (24.8 s and 25.2 s) because it had the GPU alone, versus 49.7 s each when sharing. GPU busy average 66%. Reading: one exclusive claim per job on one device means the jobs take turns, total time about the same as sharing (71 s versus 61 s) but each job's own training is twice as fast; with a single GPU DRA claims cannot give both jobs the device at once unless they share a claim.
 
 DRA reverted after the tests: chart uninstalled, node label removed, device plugin re-enabled, `nvidia.com/gpu` allocatable back to 8, no ResourceSlice left.
+
+## Scenario 3: team A floods the queue (single runs, `s3_*`)
+Team A submits 5 medium training jobs at once; team B submits 2 jobs 25 s later. Quota 4 units per team, borrowing on.
+| Measure (single run) | Plain | Kueue |
+|---|---|---|
+| Jobs finished | 3 of 7 (4 failed for good after retries) | 7 of 7 |
+| Pods failed / with CUDA out-of-memory | 21 / 18 | 0 / 0 |
+| Longest wait to start, team A / team B | 0 / 0 s (all started at once and crashed) | 475 / 188 s |
+| Time until all work ended | 299 s | 583 s |
+| GPU busy, average (DCGM) | 91% | 97% |
+| GPU time share A / B (unit-seconds, started pods) | 46% / 54% | 70% / 30% |
+| Preempted workloads | 0 | 1 (`a2`) |
+Reading: without a queue, seven jobs started at once and four never finished. With Kueue every job finished with no out-of-memory error, at the cost of longer waiting. Share is 70/30 for a 5-versus-2 submission with borrowing, so no equal split is claimed. Jobs per hour (36.1 plain, 43.2 Kueue) counts only finished jobs, so the plain figure covers just 3.
+
+## More DRA tests (single runs, `scripts/demo/kueue/dra-extra.sh`, `logs/dra/extra.txt`)
+Driver 0.5.1 with feature gates `TimeSlicingSettings` and `MPSSupport`, device plugin off, then reverted.
+| Test | Result |
+|---|---|
+| Memory test, two pods on one time-slicing claim | Both saw 10.7 of 11.6 GiB free; greedy stopped at 7 GiB; steady grew from 3 to 5 GiB (OK). Not an isolation result: the outcome depends on who allocates first. |
+| Memory test, two pods on one MPS claim (`defaultPinnedDeviceMemoryLimit: 5Gi`) | Each saw 4.9 GiB free: the limit is applied. Greedy stopped at 4 GiB; steady could NOT grow from 3 to 5 GiB (out of memory). Different limits than the earlier device-plugin MPS test, so not like for like. |
+| Kueue gating a DRA device (`deviceClassMappings`, quota `nvidia.com/dra-gpu` = 1), three jobs each with its own ResourceClaimTemplate | Admitted one at a time: done at 35, 71, 107 s; no pod OOM; pods were held by Kueue before running. |
+| The same three jobs with no queue | Done at 35, 70, 104 s; two pods sat Pending in the scheduler at the peak. |
+Reading: on one device, Kueue and the plain scheduler give the same total time (107 s versus 104 s); what differs is where the waiting happens (in Kueue's queue versus Pending pods). Kueue's DRA path only accepts ResourceClaimTemplate references, so jobs cannot share the device through Kueue.
