@@ -77,7 +77,7 @@ text("Review: Kubernetes + NVIDIA for GPU workloads", """
 **Machine.** One RTX 4070 (12 GB), native Ubuntu 24.04, driver 590.48.01, k3s, GPU Operator v26.7.2. All numbers below are **single runs on this machine**.
 
 **What we proved**
-- **Self-healing:** a killed training job stays dead on the manual path; on Kubernetes it is training again in about 51 s with nobody involved. A killed server is back and answering in 77 to 81 s.
+- **Self-healing:** a killed training job stays dead on the manual path; on Kubernetes it is training again in about 28 s with nobody involved (force-deleted pod; 27 and 28 s in two runs). A killed server is back and answering in 77 to 81 s.
 - **Sharing:** one GPU, six models. GPU busy 38% for one model alone, 93% with six sharing the card (same traffic per model). All six answer in about 0.4 s.
 - **Visibility:** live GPU and pod metrics (this dashboard) come with the stack.
 - **No penalty:** speed and GPU utilization are the same as the manual way.
@@ -93,7 +93,7 @@ SIX = [
  ("Sharing", "One job blocks the GPU", "Jobs share it",
   "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 38% for one model alone vs 93% with six sharing the card (same traffic per model), and all six answered in about 0.4 s. MPS added per-pod memory limits.", "Proven"),
  ("Failures", "Someone gets a message", "It restarts itself",
-  "Simulated crash (kill -9 by hand; pod deleted on Kubernetes). Training: by hand it stays dead until a person reruns it (finishing took 325 s); on Kubernetes the first training step is back about 51 s after the delete from its last checkpoint with nobody involved. Serving: a person restarting by hand answers in 28 s; Kubernetes answered in 77 to 81 s with nobody there. Tiny-model pod kill: 39 of 40 requests OK and 6 of 6 ready in 72 s. Recovery time is mostly model startup. Two full rehearsals (28 of 28 checks each).", "Proven"),
+  "Simulated crash (kill -9 by hand; pod force-deleted on Kubernetes with no grace period). Training: by hand it stays dead until a person reruns it (finishing took 325 s); on Kubernetes training is running again about 28 s after the kill (27 and 28 s in two runs) from its last checkpoint with nobody involved; a graceful delete took 46 to 51 s. Serving: a person restarting by hand answers in 28 s; Kubernetes answered in 77 to 81 s with nobody there. Tiny-model pod kill: 39 of 40 requests OK and 6 of 6 ready in 72 s. Recovery time is mostly model startup. Two full rehearsals (28 of 28 checks each).", "Proven"),
  ("Growing", "Rebuild a machine", "Add a machine",
   "Nodes join a running cluster in about 65 to 86 s and Kubernetes places pods on them with no manual steps (tested with 3 CPU-only VMs). The GPU Operator gave those VMs only hardware discovery and none of the GPU components, because they have no NVIDIA GPU. A GPU node joining would get the full set automatically by design. Not tested: we have one GPU, so no GPU capacity was added.", "By design"),
  ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
@@ -136,7 +136,7 @@ y += 8
 # ---------------------------------------------------------------- measured results
 row("Measured results (RTX 4070, native Ubuntu, single runs)")
 table("Failure: what happens when it is killed", """Event,Traditional (by hand),Kubernetes
-Training process killed at step 362,Stays dead. A person restarts it. Resume to done 325 s,Replacement pod training again in about 51 s. No person
+Training process killed at step 362,Stays dead. A person restarts it. Resume to done 325 s,Replacement pod training again in about 28 s (force delete). No person
 Serving process killed,Stays dead until restarted. Manual restart answered in 28 s (warm),Pod replaced and answering in 77 to 81 s. No person
 Time slicing: second training job,n/a,Crashed twice with CUDA out of memory (no memory isolation)""", 0, 12, 7)
 table("Sharing one GPU", """Setup,Memory per pod,Result

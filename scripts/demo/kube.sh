@@ -50,32 +50,35 @@ cleanup_sharing; wait_gpu_free
 pause
 
 step 2 "Failures"
-fix "Kubernetes watches the Job. We simulate the crash by deleting the pod; it starts a replacement and training resumes from its last checkpoint."
+fix "Kubernetes watches the Job. We simulate the crash by force-deleting the pod (no grace period, like kill -9); it starts a replacement and training resumes from its last checkpoint."
 kubectl apply -f k8s/pvc.yaml -f k8s/train-job.yaml >/dev/null
 for t in $(seq 1 600); do kubectl exec job/train -- ls /work/outputs/k8s 2>/dev/null | grep -q 'checkpoint-75$' && break; printf '\r  training in a pod... %ss ' $t; sleep 1; done; echo
 OLD=$(kubectl get pods -l app=train -o name | head -1)
-show kubectl delete pod -l app=train --wait=false
-T0=$(date +%s); NEW=""
-for t in $(seq 1 180); do
+show kubectl delete pod -l app=train --grace-period=0 --force
+T0=$(date +%s); RUNSECS=""; RESSECS=""; GPUSECS=""; NEW=""; RES=""
+for t in $(seq 1 240); do
+  E=$(( $(date +%s)-T0 ))
   NEW=$(kubectl get pods -l app=train --no-headers 2>/dev/null | awk '$3=="Running"{print "pod/"$1}' | head -1)
-  [ -n "$NEW" ] && [ "$NEW" != "$OLD" ] && break; NEW=""; sleep 1; done
-RUNSECS=$(( $(date +%s)-T0 ))
+  [ -z "$RUNSECS" ] && [ -n "$NEW" ] && [ "$NEW" != "$OLD" ] && RUNSECS=$E
+  if [ -n "$RUNSECS" ]; then
+    [ -z "$RESSECS" ] && RES=$(kubectl logs "$NEW" 2>/dev/null | grep -o 'resume_from_checkpoint=[^ ]*' | tail -1) && [ -n "$RES" ] && RESSECS=$E
+    [ -n "$RESSECS" ] && [ "$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits)" -ge 50 ] && { GPUSECS=$E; break; }
+  fi
+  sleep 1; done
 show kubectl get pods -l app=train
-STEP=""; STEPSECS=""; for t in $(seq 1 240); do
-  STEP=$(kubectl logs "$NEW" 2>/dev/null | tr '\r' '\n' | grep -oE '[0-9]+/900' | tail -1)
-  [ -n "$STEP" ] && { STEPSECS=$(( $(date +%s)-T0 )); break; }; sleep 1; done
-RES=$(kubectl logs "$NEW" 2>/dev/null | grep -o 'resume_from_checkpoint=[^ ]*' | tail -1)
-echo "${B}Scoreboard: simulated crash, Kubernetes${R}"
-echo "  replacement pod Running:       ${RUNSECS} s"
-echo "  first training step after it:  ${STEPSECS:-not seen} s (this is the headline number), $RES, nobody involved"
+echo "${B}Scoreboard: simulated crash (force delete, like kill -9), Kubernetes${R}"
+echo "  replacement pod Running:       ${RUNSECS:-not seen} s"
+echo "  resume line logged:            ${RESSECS:-not seen} s, ${RES:-none}"
+echo "  GPU busy again (>= 50%):       ${GPUSECS:-not seen} s   <- training running again, nobody involved (headline)"
 echo "  serving (measured earlier):    answering again in 77 to 81 s with nobody there; a person restarting by hand takes 28 s"
 echo "  users during a tiny-pod kill (measured earlier): 39 of 40 requests OK, 6 of 6 ready again in 72 s"
-note "Recovery time is mostly model startup, the same on both paths. The difference is that nobody has to be there."
-result "Failures" "simulated crash: first training step ${STEPSECS:-?} s after the delete, resumed (${RES:-unknown}), no person involved"
+note "A graceful pod delete (30 s grace period) took 46 to 51 s to resume in earlier measurements. Recovery time is mostly model startup, the same on both paths. The difference is that nobody has to be there."
+result "Failures" "simulated crash: training running again ${GPUSECS:-?} s after the kill, resumed (${RES:-unknown}), no person involved"
 kubectl delete -f k8s/train-job.yaml --ignore-not-found >/dev/null 2>&1
 pause
 
 step 3 "Watching"
+wait_gpu_free; sleep 5
 fix "GPU, pod and restart metrics are collected for you (DCGM exporter, Prometheus, kube-state-metrics, Grafana)."
 Q='DCGM_FI_DEV_GPU_UTIL'
 say "GPU busy right now, asked from Prometheus through Grafana: $(curl -s -u admin:admin "localhost:30300/api/datasources/proxy/uid/prometheus/api/v1/query" --data-urlencode "query=$Q" -G | jq -r '.data.result[0].value[1] // "no data"')%"
@@ -96,7 +99,7 @@ fix "One Helm install of the NVIDIA GPU Operator. It discovers the GPU, labels t
 show helm list -n gpu-operator
 show kubectl get pods -n gpu-operator
 say "GPUs Kubernetes can schedule: $(kubectl get node -l nvidia.com/gpu.present=true -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}')"
-show bash -c "kubectl get node -o json | jq -r '.metadata.labels | to_entries[] | select(.key|test(\"nvidia.com/(gpu.product|gpu.memory|cuda.driver-version.full)\")) | \"  \" + .key + \" = \" + .value'"
+show bash -c "kubectl get nodes -l nvidia.com/gpu.present=true -o json | jq -r '.items[0].metadata.labels | to_entries[] | select(.key|test(\"nvidia.com/(gpu.product|gpu.memory|cuda.driver-version.full)\")) | \"  \" + .key + \" = \" + .value'"
 note "The driver and container toolkit come from the host. The Operator does not install them here."
 result "Setting up" "one Helm install; GPU found and labeled automatically; same manifests on WSL2 and native Ubuntu"
 pause

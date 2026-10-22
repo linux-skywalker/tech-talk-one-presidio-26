@@ -75,7 +75,7 @@ SIX = [
  ("Sharing", "One job blocks the GPU", "Jobs share it",
   "Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time, GPU busy 38% for one model alone vs 93% with six sharing the card (same traffic per model), and all six answered in about 0.4 s. MPS added per-pod memory limits.", "Proven"),
  ("Failures", "Someone gets a message", "It restarts itself",
-  "Simulated crash (kill -9 by hand; pod deleted on Kubernetes). Training: by hand it stays dead until a person reruns it (finishing took 325 s); on Kubernetes the first training step is back about 51 s after the delete from its last checkpoint with nobody involved. Serving: a person restarting by hand answers in 28 s; Kubernetes answered in 77 to 81 s with nobody there. Tiny-model pod kill: 39 of 40 requests OK and 6 of 6 ready in 72 s. Recovery time is mostly model startup. Two full rehearsals (28 of 28 checks each).", "Proven"),
+  "Simulated crash (kill -9 by hand; pod force-deleted on Kubernetes with no grace period). Training: by hand it stays dead until a person reruns it (finishing took 325 s); on Kubernetes training is running again about 28 s after the kill (27 and 28 s in two runs) from its last checkpoint with nobody involved; a graceful delete took 46 to 51 s. Serving: a person restarting by hand answers in 28 s; Kubernetes answered in 77 to 81 s with nobody there. Tiny-model pod kill: 39 of 40 requests OK and 6 of 6 ready in 72 s. Recovery time is mostly model startup. Two full rehearsals (28 of 28 checks each).", "Proven"),
  ("Growing", "Rebuild a machine", "Add a machine",
   "Nodes join a running cluster in about 65 to 86 s and Kubernetes places pods on them with no manual steps (tested with 3 CPU-only VMs). The GPU Operator gave those VMs only hardware discovery and none of the GPU components, because they have no NVIDIA GPU. A GPU node joining would get the full set automatically by design. Not tested: we have one GPU, so no GPU capacity was added.", "By design"),
  ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
@@ -141,7 +141,7 @@ body = f"""
 <div class="card"><b>Thesis.</b> Kubernetes with NVIDIA's tools makes GPU work easier to run than doing it by hand. The same model (Qwen2.5-1.5B-Instruct, LoRA fine-tune on 800 examples, served with vLLM) was done both ways. All numbers are single runs on this one machine.</div>
 
 <div class="kpis">
-<div class="kpi"><b>51 s</b><span>killed training job is training again, no person involved (manual: stays dead)</span></div>
+<div class="kpi"><b>28 s</b><span>killed training job (force-deleted pod) is training again, no person involved (manual: stays dead)</span></div>
 <div class="kpi"><b>77 to 81 s</b><span>killed server is answering again on Kubernetes, no person involved</span></div>
 <div class="kpi"><b>38% to 93%</b><span>GPU busy: one tiny model alone vs six models sharing the card (same traffic per model)</span></div>
 <div class="kpi"><b>Same</b><span>speed and GPU use as the manual way: 90.5% vs 89.1% busy, 1774 vs 1773 tok/s</span></div>
@@ -162,7 +162,7 @@ body = f"""
 
 <h2>3. What Kubernetes gave us</h2>
 {table(["Event", "Traditional (by hand)", "Kubernetes"], [
- ["Training killed at step 362", "Stays dead. A person restarts it. Resume to done 325 s", "Replacement pod training again in about 51 s. No person"],
+ ["Training killed at step 362", "Stays dead. A person restarts it. Resume to done 325 s", "Replacement pod training again in about 28 s (force delete). No person"],
  ["Serving process killed", "Stays dead until restarted. Manual restart answered in 28 s (warm)", "Pod replaced and answering in 77 to 81 s. No person"],
  ["Second pod on a busy GPU", "Not applicable (no scheduler)", "Default: stays Pending. With time slicing: six tiny models ran on one card"],
 ])}

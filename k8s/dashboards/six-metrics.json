@@ -45,7 +45,7 @@
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### back in ~51 s, no person\n\n**Traditional:** Stays dead until a person acts\n\n**Kubernetes + NVIDIA:** Simulated crash: training is back about 51 s after the delete from its last checkpoint, nobody involved. Serving: 77 to 81 s (28 s if a person restarts it by hand). 39 of 40 requests OK during a pod kill."
+    "content": "### back in ~28 s, no person\n\n**Traditional:** Stays dead until a person acts\n\n**Kubernetes + NVIDIA:** Simulated crash: training is running again about 28 s after the kill from its last checkpoint, nobody involved. Serving: 77 to 81 s (28 s if a person restarts it by hand). 39 of 40 requests OK during a pod kill."
    },
    "fieldConfig": {
     "defaults": {

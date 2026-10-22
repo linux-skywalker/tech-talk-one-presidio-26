@@ -200,3 +200,9 @@ Run: `bash scripts/demo/vm-grow.sh 3` (log `logs/demo_vm_run5.log`). Multipass V
 - The k3s binary, the llama.cpp image (310 MB tar) and the model file were copied into each VM from local files. Cold, a single image pull took about 8 min and the k3s download from GitHub stalled, because downloads were slow that day. The 65 to 95 s figures exclude that.
 - An earlier attempt (run 3) printed 2278 requests/s because failed requests were counted; that number is invalid and the script now counts only HTTP 200.
 - Multipass could not download its own Ubuntu image on this machine (cause unknown), so the VMs launch from a local cloud image.
+
+## Training recovery re-measured with a force delete (clean kube.sh runs)
+`kubectl delete pod --grace-period=0 --force` (closest to `kill -9`; no 30 s grace period, so the old process stops at once). Replacement pod Running at 9 to 11 s, resume line at 26 to 27 s (resumed from checkpoint-75), GPU busy again at **27 s** (`logs/demo_kube_run5.log`) and **28 s** (probe), next checkpoint at 41 s (probe). Single runs, two samples.
+- Earlier "about 51 s" and the 31 to 32 s Running figure used a graceful `kubectl delete pod` (30 s grace period; the old process keeps training and can write checkpoints meanwhile), so they are not comparable.
+- The 207 to 208 s seen in two earlier runs was the script detecting the first step late (the progress bar redraws on one line), not a slow recovery.
+- Sharing: 6 of 6 ready in 333 s, 339 s and 333 s (three clean runs), 0 restarts. A run during slow internet took 1199 s because each pod was downloading its model; the model cache is now seeded into the PVC.
