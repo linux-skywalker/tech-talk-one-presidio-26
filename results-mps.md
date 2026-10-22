@@ -19,7 +19,7 @@ Reading: under MPS the server's reply time while training ran was about 20% lowe
 
 ## Memory limit
 Earlier single run on this machine (`results-ubuntu-4070.md`, MPS replicas 2): each pod saw 5.9 of 11.6 GiB free; greedy stopped at 5 GiB; the steady pod grew from 3 to 5 GiB. Time slicing, same pods: steady failed with an out-of-memory error.
-Re-run for this report: PENDING (running when this file was written; see `logs/techniques/memtest-mps2.txt` if present).
+Re-run for this report (n=1, so n=2 with the earlier run; `logs/techniques/memtest-mps2.txt`): each pod saw 5.9 of 11.6 GiB free; greedy stopped at 5 GiB; the steady pod grew from 3 to 5 GiB (OK). Same result as the earlier run.
 DRA MPS claim with a 5 GiB pinned limit (single run, `logs/dra/extra.txt`): each pod saw 4.9 GiB free; greedy stopped at 4 GiB; steady could not grow from 3 to 5 GiB.
 
 ## Fault isolation (kill -9 one client)

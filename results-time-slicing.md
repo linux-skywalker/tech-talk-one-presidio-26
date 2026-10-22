@@ -32,7 +32,7 @@ Reading: sharing let both run at once. The training job slowed about 53% (76 s t
 ## Memory isolation (out of memory)
 Test: the Qwen2.5-1.5B server (`GPU_UTIL=0.4`) is running with 6851 MiB free; a Qwen2.5-1.5B fine-tune (batch 4) is started next to it (replicas 4). n=1.
 Result: the training job failed. Error: `OutOfMemoryError: CUDA out of memory. Tried to allocate 76.00 MiB. GPU 0 has a total capacity of 11.59 GiB of which 45.06 MiB is free. Including non-PyTorch memory, this process has 6.64 GiB memory in use.` Peak GPU memory 11828 MiB. Log: `logs/techniques/oom-ts4.log`. Earlier co-runs in this session (4 of 4, other batch sizes) failed the same way.
-Earlier greedy/steady memory test (single run, `results-ubuntu-4070.md`): under time slicing the steady pod could not grow from 3 to 5 GiB. In the DRA time-slicing re-run (single run) it could, because the greedy pod stopped at 7 GiB first; that outcome depends on who allocates first, so time slicing gives no guarantee.
+Greedy/steady memory pods re-run for this report (replicas 4, n=1; `logs/techniques/memtest-ts4.txt`): both pods saw about 10.8 of 11.6 GiB free (no per-pod limit); the greedy pod took memory until it stopped at 7 GiB; the steady pod then could NOT grow from 3 to 5 GiB (OutOfMemoryError). The earlier run (`results-ubuntu-4070.md`) gave the same result. Same pods under MPS: the steady pod grew (see `results-mps.md`). In the DRA time-slicing re-run (single run) it could, because the greedy pod stopped at 7 GiB first; that outcome depends on who allocates first, so time slicing gives no guarantee.
 
 ## Fault isolation (kill -9 one client)
 Two 4-epoch jobs share the GPU (replicas 4); 25 s after both run, job A's container is killed with SIGKILL (confirmed gone in `/proc`).

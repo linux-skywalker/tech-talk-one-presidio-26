@@ -83,3 +83,9 @@
 [04:27:47] === extra test fault under mps2 done ===
 [04:28:38] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
 [04:28:38] === extra test memtest under mps2 (nvidia.com/gpu=2 strategy=mps replicas=2) ===
+[04:31:22] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:31:22] === extra test memtest under mps2 done ===
+[04:31:42] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:31:42] === extra test memtest under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:34:14] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:34:14] === extra test memtest under ts4 done ===

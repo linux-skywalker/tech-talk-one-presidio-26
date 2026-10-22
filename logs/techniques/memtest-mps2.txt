@@ -1,0 +1,8 @@
+memtest mps2 (nvidia.com/gpu=2 strategy=mps replicas=2)
+-- mem-steady
+steady sees free=5.9 total=11.6 GiB
+steady holds 3 GiB
+steady GREW by 2 GiB: OK
+-- mem-greedy
+greedy sees free=5.9 total=11.6 GiB
+greedy stopped at 5 GiB: OutOfMemoryError

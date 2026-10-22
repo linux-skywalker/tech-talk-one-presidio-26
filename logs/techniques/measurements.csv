@@ -31,3 +31,5 @@ ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,fault-kill-one-client,1,fa
 ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,fault-kill-one-client,2,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,59.9,1.67,53.43,,,,,,,,,fb error: none
 mps2,nvidia.com/gpu=2 strategy=mps replicas=2,fault-kill-one-client,1,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,74.14,1.349,43.16,,,,,,,,,fb error: none
 mps2,nvidia.com/gpu=2 strategy=mps replicas=2,fault-kill-one-client,2,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,74.04,1.351,43.22,,,,,,,,,fb error: none
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,memtest,1,steady/greedy pods,done,,,,,,,,,,,-- mem-steady;steady sees free=5.9 total=11.6 GiB;steady holds 3 GiB;steady GREW by 2 GiB: OK; greedy stopped at 5 GiB: OutOfMemoryError
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,memtest,1,steady/greedy pods,done,,,,,,,,,,,-- mem-steady;steady sees free=10.8 total=11.6 GiB;steady holds 3 GiB;steady could NOT grow by 2 GiB: OutOfMemoryError; greedy stopped at 7 GiB: OutOfMemoryError
