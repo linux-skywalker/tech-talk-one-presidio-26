@@ -1,0 +1,48 @@
+=== s5 / plain / run 2 (044939-s5-plain-2) ===
+  [04:49:44 +  0s] submitted serve (team a, 1 units, priority inference)
+  [04:50:36 +  0s] submitted a1 (trainm, team a, 1 units)
+  [04:50:36 +  0s] submitted a2 (trains, team a, 1 units)
+  [04:50:36 +  0s] submitted a3 (trainm, team a, 1 units)
+  [04:50:36 +  0s] submitted b1 (trains, team b, 1 units)
+  [04:50:36 +  0s] submitted b2 (trainm, team b, 1 units)
+  [04:50:36 +  0s] submitted b3 (trains, team b, 1 units)
+  [04:51:00 + 24s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 5009 MiB, power 60.11 W, temp 55 C
+  [04:51:25 + 49s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 10345 MiB, power 166.02 W, temp 59 C
+  [04:51:49 + 73s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 10345 MiB, power 159.09 W, temp 60 C
+  [04:52:13 + 97s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 10345 MiB, power 163.90 W, temp 62 C
+  [04:52:38 +122s] jobs done 0, failed 4 of 6; Running=1  GPU busy 100 %, mem 10345 MiB, power 161.54 W, temp 62 C
+  [04:53:02 +146s] jobs done 1, failed 4 of 6; Running=1  GPU busy 100 %, mem 9078 MiB, power 172.43 W, temp 63 C
+  [04:53:26 +170s] jobs done 1, failed 4 of 6; Running=1  GPU busy 100 %, mem 9078 MiB, power 172.71 W, temp 63 C
+  scenario                         s5
+  arm                              plain
+  rep                              2
+  duration_s                       187
+  queue_wait_s                     {'serve': 1, 'a1': 0, 'a2': 0, 'a3': 0, 'b1': 0, 'b2': 0, 'b3': 0}
+  wait_train_median_s              0
+  wait_train_max_s                 0
+  wait_team_A_max_s                0
+  wait_team_B_max_s                0
+  jobs_total                       6
+  jobs_done                        2
+  jobs_failed                      4
+  makespan_s                       185
+  jobs_per_hour                    38.8
+  pods_failed                      18
+  pods_with_oom                    16
+  restarts_serve                   0
+  preempted_workloads              []
+  evictions                        0
+  gpu_util_avg                     88
+  gpu_mem_max_mib                  11855
+  dcgm_avg_util                    89
+  waiting_job_seconds              266
+  waiting_while_mem_below_9GB_s    44
+  waiting_while_util_below_50_s    32
+  unit_seconds_A                   989
+  unit_seconds_B                   671
+  share_A_pct                      60
+  probe_ok                         125
+  probe_err                        0
+  ttft_p50_s                       0.023
+  ttft_p95_s                       0.032
+  latency_p95_s                    1.462
