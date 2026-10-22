@@ -42,7 +42,7 @@ echo "  ready:               $RDY of $N in ${READY} s after scaling, $RST restar
 echo "  GPU busy (same traffic per model):  1 model alone ${ALONE_BUSY}%  ->  $N sharing ${SH_BUSY}%   (this run)"
 echo "  GPU memory:          ${MEM} of ${TOTAL} MiB used by $N models"
 echo "  one card per model:  would be $N cards at about the 'alone' busy figure"
-echo "  measured earlier:    plain Deployment of 6 had 4 of 6 up after 10 min; ordered start fixed it. Earlier sweeps: 38% alone vs 93% at moderate traffic. Runs of this step so far: 72% and 90% busy sharing"
+echo "  measured earlier:    plain Deployment of 6 had 4 of 6 up after 10 min; ordered start fixed it. Earlier sweeps: 38% alone vs 93% at moderate traffic. Runs of this step so far: 50%, 72% and 90% busy sharing (alone: 16 to 22%)"
 echo "  one catch:                          answers ${ALONE_MS} ms -> ${SH_MS} ms because models take turns with no isolation. This RTX 4070 has no MIG; on A100/H100 MIG gives isolated slices (theory, not run). MPS adds memory limits per pod. Kubernetes lets you choose by setting"
 note "GPU busy is not throughput: at saturation one copy alone does about the same total work as six sharing. Time slicing shares time, not memory."
 result "Sharing" "$RDY of $N ready in ${READY} s, $RST restarts; GPU busy ${ALONE_BUSY}% alone to ${SH_BUSY}% sharing at the same per-model traffic; answers ${ALONE_MS} to ${SH_MS} ms"
