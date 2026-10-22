@@ -20,5 +20,5 @@ say "  Same Helm install, same manifests; the difference sits below the Kubernet
 echo "${B}Scoreboard: moving, Kubernetes${R}"
 echo "  manifests changed between WSL2 and native Ubuntu:  $CH lines in 4 files"
 echo "  Operator workarounds: 3 on WSL2, 0 on native Ubuntu (host-level, not manifest changes)"
-echo "  another cloud:  not run"
+echo "  two different hosts (WSL2 on Windows driver, native Ubuntu 24.04): same manifests. Another cloud: not run, told as theory"
 result "Moving" "$CH changed lines in 4 manifests between WSL2 and native Ubuntu; the API server accepts them as they are; another cloud not run"
