@@ -16,11 +16,11 @@
   {
    "id": 1,
    "type": "text",
-   "title": "1 Setting up  |  PROVEN",
+   "title": "1 Sharing  |  PROVEN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 2 hosts, 0 changed lines\n\n**Traditional:** By hand on every machine\n\n**Kubernetes + NVIDIA:** Same Helm install and manifests on WSL2 and native Ubuntu. Operator found the GPU in 33 s."
+    "content": "### 38% to 93% GPU busy\n\n**Traditional:** One job blocks the GPU\n\n**Kubernetes + NVIDIA:** Six models on one card, all answering in about 0.4 s. GPU busy 38% for one model alone, 93% with six sharing."
    },
    "fieldConfig": {
     "defaults": {
@@ -41,11 +41,11 @@
   {
    "id": 2,
    "type": "text",
-   "title": "2 Watching  |  PROVEN",
+   "title": "2 Failures  |  PROVEN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### Live, every 1 s\n\n**Traditional:** Check a terminal\n\n**Kubernetes + NVIDIA:** GPU busy, memory, power, pod status and restarts. Up in 53 s. See the live strip below."
+    "content": "### 51 s training, 77 s serving\n\n**Traditional:** Stays dead until a person acts\n\n**Kubernetes + NVIDIA:** Killed pods come back with nobody involved. Training resumes from its last checkpoint."
    },
    "fieldConfig": {
     "defaults": {
@@ -66,11 +66,11 @@
   {
    "id": 3,
    "type": "text",
-   "title": "3 Sharing  |  PROVEN",
+   "title": "3 Watching  |  PROVEN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 38% to 93% GPU busy\n\n**Traditional:** One job blocks the GPU\n\n**Kubernetes + NVIDIA:** Six models on one card, all answering in about 0.4 s. GPU busy 38% for one model alone, 93% with six sharing."
+    "content": "### Live, every 1 s\n\n**Traditional:** Check a terminal\n\n**Kubernetes + NVIDIA:** GPU busy, memory, power, pod status and restarts. Up in 53 s. See the live strip below."
    },
    "fieldConfig": {
     "defaults": {
@@ -91,17 +91,17 @@
   {
    "id": 4,
    "type": "text",
-   "title": "4 Failures  |  PROVEN",
+   "title": "4 Moving  |  BY DESIGN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 51 s training, 77 s serving\n\n**Traditional:** Stays dead until a person acts\n\n**Kubernetes + NVIDIA:** Killed pods come back with nobody involved. Training resumes from its last checkpoint."
+    "content": "### 0 changed lines\n\n**Traditional:** Rewrite for each cloud\n\n**Kubernetes + NVIDIA:** Kubernetes is a standard API. The same manifests ran on two different hosts."
    },
    "fieldConfig": {
     "defaults": {
      "color": {
       "mode": "fixed",
-      "fixedColor": "green"
+      "fixedColor": "blue"
      }
     },
     "overrides": []
@@ -116,17 +116,17 @@
   {
    "id": 5,
    "type": "text",
-   "title": "5 Growing  |  NOT TESTED",
+   "title": "5 Setting up  |  PROVEN",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### Not measured\n\n**Traditional:** Rebuild a machine\n\n**Kubernetes + NVIDIA:** We had one node. Adding a node is the next step."
+    "content": "### 2 hosts, 0 changed lines\n\n**Traditional:** By hand on every machine\n\n**Kubernetes + NVIDIA:** Same Helm install and manifests on WSL2 and native Ubuntu. Operator found the GPU in 33 s."
    },
    "fieldConfig": {
     "defaults": {
      "color": {
       "mode": "fixed",
-      "fixedColor": "orange"
+      "fixedColor": "green"
      }
     },
     "overrides": []
@@ -141,17 +141,17 @@
   {
    "id": 6,
    "type": "text",
-   "title": "6 Moving  |  BY DESIGN",
+   "title": "6 Growing  |  NOT TESTED",
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 0 changed lines\n\n**Traditional:** Rewrite for each cloud\n\n**Kubernetes + NVIDIA:** Kubernetes is a standard API. The same manifests ran on two different hosts."
+    "content": "### Not measured\n\n**Traditional:** Rebuild a machine\n\n**Kubernetes + NVIDIA:** We had one node. Adding a node is the next step."
    },
    "fieldConfig": {
     "defaults": {
      "color": {
       "mode": "fixed",
-      "fixedColor": "blue"
+      "fixedColor": "orange"
      }
     },
     "overrides": []

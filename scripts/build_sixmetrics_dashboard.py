@@ -21,6 +21,8 @@ COLS = [
  ("6 Moving", "BY DESIGN", "0 changed lines",
   "Rewrite for each cloud", "Kubernetes is a standard API. The same manifests ran on two different hosts."),
 ]
+ORDER = ["Sharing", "Failures", "Watching", "Moving", "Setting up", "Growing"]
+COLS = sorted(COLS, key=lambda c: ORDER.index(c[0][2:]))
 panels, pid = [], 0
 
 
@@ -33,7 +35,7 @@ def nid():
 for i, (name, status, big, trad, k8s) in enumerate(COLS):
     md = f"### {big}\n\n**Traditional:** {trad}\n\n**Kubernetes + NVIDIA:** {k8s}"
     color = {"PROVEN": "green", "BY DESIGN": "blue", "NOT TESTED": "orange"}[status]
-    panels.append({"id": nid(), "type": "text", "title": f"{name}  |  {status}", "transparent": False,
+    panels.append({"id": nid(), "type": "text", "title": f"{i + 1} {name[2:]}  |  {status}", "transparent": False,
                    "options": {"mode": "markdown", "content": md},
                    "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": color}}, "overrides": []},
                    "gridPos": {"x": i * 4, "y": 0, "w": 4, "h": 11}})

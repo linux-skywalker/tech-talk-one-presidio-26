@@ -81,6 +81,8 @@ SIX = [
  ("Moving", "Rewrite for each cloud", "Same setup runs anywhere",
   "Kubernetes is a standard API, so the same manifests apply on any conformant cluster: on-premises or in any cloud. We moved the same stack between two different hosts (WSL2 and native Ubuntu) with 0 changed lines in 4 manifests. Not run on another cloud.", "By design"),
 ]
+ORDER = ["Sharing", "Failures", "Watching", "Moving", "Setting up", "Growing"]
+SIX.sort(key=lambda r: ORDER.index(r[0]))
 
 
 def badge(s):
