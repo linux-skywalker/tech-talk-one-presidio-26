@@ -21,3 +21,9 @@ Notes
 Video decisions (user)
 - Growing is told mostly as theory in the Remotion video. The live Growing scripts (`trad/6-growing.sh`, `kube/6-growing.sh`) stay as an optional short clip and as proof that nodes join; label it CPU replicas, by design.
 - Sharing also covers MIG as theory in Remotion (three ways to share: time slicing, MPS, MIG), from `MIG-THEORY.md`. MIG was not run: the RTX 4070 has no MIG.
+- Failures is closed: Kubernetes ships restart as a built-in (out of the box); the traditional side needs systemd, a supervisor or a retry loop (untested).
+- Moving: proof is WSL2 versus native Ubuntu 24.04 (same 4 manifests, 0 changed lines). Multi-cloud is theory plus the presenter's spoken experience, never an on-screen measured claim.
+- Setting up: never talk about setup speed. The message is leverage: engineers already know Kubernetes tools, applied to the GPU data center.
+- Do not argue "big companies are moving"; use cited studies (kept separate from the 4070 numbers).
+- Tone: optimistic and forward-looking; no heavy criticism.
+- Step 0 tour: about 75 s, runs nothing; wording "Helm and manifests" (no Kustomize added).
