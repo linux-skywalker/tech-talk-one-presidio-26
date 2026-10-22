@@ -5,7 +5,7 @@ source "$(dirname "$0")/common.sh"
 view() { echo; echo "${YEL}# $1${R}"; sed -n "${2:-1,40}p" "$1" | cut -c1-150; }
 step 0 "Setup tour: what we set up, as code"
 echo "${B}Traditional: scripts and a pinned environment${R}"
-view scripts/requirements-trad.lock 1,8; say "  ... $(wc -l < scripts/requirements-trad.lock) pinned packages in total"
+echo; echo "${YEL}# scripts/requirements-trad.lock (key pins)${R}"; grep -E "^(vllm|torch|trl|peft|transformers|datasets|accelerate)==" scripts/requirements-trad.lock; say "  ... $(wc -l < scripts/requirements-trad.lock) pinned packages in total"
 view scripts/serve.sh 1,10
 view scripts/train.py 1,14
 pause
