@@ -23,6 +23,7 @@ pkill -f '[v]llm serve'; wait_gpu_free
 echo "${B}Scoreboard: 6 models on 1 GPU, traditional${R}"
 echo "  all at once, by hand:        $UP of 6 up   (this run)"
 echo "  one at a time, by script:    5 of 6 up in 257 s, the 2nd failed and nothing retried   (measured earlier, results-ubuntu-4070.md)"
+echo "  the usual habit, one card per model: 6 models need 6 cards, each about 14% busy at light traffic (one model alone, measured), so about 14% on average"
 result "Sharing" "$UP of 6 up all at once; 5 of 6 one at a time (257 s); failed ones are never retried"
 pause
 

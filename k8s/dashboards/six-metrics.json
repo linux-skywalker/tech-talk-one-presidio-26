@@ -20,7 +20,7 @@
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 6 models on 1 GPU\n\n**Traditional:** 0 of 6 up when started at once by hand. 5 of 6 one at a time by script, none retried.\n\n**Kubernetes + NVIDIA:** 6 of 6 ready in about 7 min, 0 restarts, answers about 0.4 s. GPU busy 38% (one model) to 93% (six): the card is full, not more work done."
+    "content": "### 6 cards become 1\n\n**Traditional:** One card per model: 6 cards, each about 14% busy at light traffic. Started together by hand: 0 of 6 up.\n\n**Kubernetes + NVIDIA:** 6 models on 1 card: 49 to 71% busy at light traffic, 93% at moderate. 6 of 6 ready, 0 restarts. Price: answers 214 to 396 ms instead of 81 ms."
    },
    "fieldConfig": {
     "defaults": {
