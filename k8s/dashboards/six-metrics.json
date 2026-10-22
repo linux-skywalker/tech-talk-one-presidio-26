@@ -20,7 +20,7 @@
    "transparent": false,
    "options": {
     "mode": "markdown",
-    "content": "### 38% to 93% GPU busy\n\n**Traditional:** One job blocks the GPU\n\n**Kubernetes + NVIDIA:** Six models on one card, all answering in about 0.4 s. GPU busy 38% for one model alone, 93% with six sharing."
+    "content": "### 6 models on 1 GPU\n\n**Traditional:** 0 of 6 up when started at once by hand. 5 of 6 one at a time by script, none retried.\n\n**Kubernetes + NVIDIA:** 6 of 6 ready in about 7 min, 0 restarts, answers about 0.4 s. GPU busy 38% (one model) to 93% (six): the card is full, not more work done."
    },
    "fieldConfig": {
     "defaults": {

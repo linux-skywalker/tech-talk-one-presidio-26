@@ -27,11 +27,20 @@ for t in $(seq 1 900); do
   printf '\r  %ss: %s of %s models ready (started one at a time, retries handled by Kubernetes) ' $(( $(date +%s)-T0 )) "$RDY" "$N"
   [ "$RDY" = "$N" ] && break; sleep 3; done; echo
 show kubectl get pods -l app=serve-tiny
-for i in $(seq 0 $((N-1))); do
+MS=0; for i in $(seq 0 $((N-1))); do
+  a=$(date +%s%N)
   A=$(curl -s -m 20 localhost:$((30090+i))/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"HuggingFaceTB/SmolLM2-135M-Instruct","messages":[{"role":"user","content":"Say hello."}],"max_tokens":12,"temperature":0}' | jq -r '.choices[0].message.content // "no answer"' | tr '\n' ' ')
-  echo "  serve-tiny-$i: $A"; done
+  m=$(( ($(date +%s%N)-a)/1000000 )); MS=$((MS+m))
+  echo "  serve-tiny-$i: $A (${m} ms)"; done
+MEAN=$((MS/N)); RST=$(kubectl get pods -l app=serve-tiny -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' | awk '{s+=$1} END{print s+0}')
 say "GPU memory used with $N models: $(gpu_used_mib) MiB of $(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits) MiB"
-result "Sharing" "$RDY of $N models ready on one card, started and checked by Kubernetes (ready in $(( $(date +%s)-T0 )) s)"
+echo "${B}Scoreboard: $N models on 1 GPU, Kubernetes${R}"
+echo "  ready:            $RDY of $N in $(( $(date +%s)-T0 )) s, $RST restarts"
+echo "  answers:          mean $MEAN ms per request (while sharing)"
+echo "  GPU memory:       $(gpu_used_mib) MiB used"
+echo "  measured earlier: a plain Deployment of 6 had 4 of 6 up after 10 min; ordered start (StatefulSet) fixed it"
+note "Time slicing shares time, not memory: no isolation. Sharing fits more models on a card, it does not add throughput."
+result "Sharing" "$RDY of $N models ready on one card in $(( $(date +%s)-T0 )) s, $RST restarts, mean answer $MEAN ms"
 cleanup_sharing; wait_gpu_free
 pause
 

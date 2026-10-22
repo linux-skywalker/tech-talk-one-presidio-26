@@ -20,7 +20,10 @@ say "Servers answering: $UP of 6. Processes still alive: $(pgrep -fc '[v]llm ser
 grep -h "No available memory" logs/demo_trad_tiny*.log | sed "s/.*ValueError/ValueError/" | cut -c1-110 | sort | uniq -c | head -1
 note "Nobody restarts the ones that died. You find out by looking."
 pkill -f '[v]llm serve'; wait_gpu_free
-result "Sharing" "$UP of 6 models up when started together by hand; the others died and stay dead"
+echo "${B}Scoreboard: 6 models on 1 GPU, traditional${R}"
+echo "  all at once, by hand:        $UP of 6 up   (this run)"
+echo "  one at a time, by script:    5 of 6 up in 257 s, the 2nd failed and nothing retried   (measured earlier, results-ubuntu-4070.md)"
+result "Sharing" "$UP of 6 up all at once; 5 of 6 one at a time (257 s); failed ones are never retried"
 pause
 
 step 2 "Failures"
