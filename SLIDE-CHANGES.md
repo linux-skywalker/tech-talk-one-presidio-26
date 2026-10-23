@@ -19,6 +19,3 @@ The numbers on slides 7 to 11 match our measurements except for the points below
 | GPU busy (DCGM) | 87% | 95% |
 
 Say the cost too: Kueue finished the work about 2.4 times later because jobs waited their turn.
-
-## Missing from the deck (for later)
-- No slide for **DRA** (listed on slide 7) and none for **time slicing** (the technique with the most data). Numbers: `results-time-slicing.md`, `results-dra.md`.
