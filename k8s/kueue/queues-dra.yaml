@@ -1,0 +1,40 @@
+# Kueue quota in GiB of GPU memory for the DRA test (capacity-based quota, alpha). Two teams share one cohort; 5.5Gi each = 11Gi of the card's 12282Mi.
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata: {name: cqd-team-a}
+spec:
+  cohortName: gpu-dra
+  namespaceSelector: {}
+  queueingStrategy: BestEffortFIFO
+  preemption: {withinClusterQueue: LowerPriority, reclaimWithinCohort: Any}
+  resourceGroups:
+  - coveredResources: ["gpu.memory"]
+    flavors:
+    - name: rtx4070
+      resources:
+      - {name: gpu.memory, nominalQuota: 5632Mi}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata: {name: cqd-team-b}
+spec:
+  cohortName: gpu-dra
+  namespaceSelector: {}
+  queueingStrategy: BestEffortFIFO
+  preemption: {withinClusterQueue: LowerPriority, reclaimWithinCohort: Any}
+  resourceGroups:
+  - coveredResources: ["gpu.memory"]
+    flavors:
+    - name: rtx4070
+      resources:
+      - {name: gpu.memory, nominalQuota: 5632Mi}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata: {name: gpu-dra, namespace: team-a}
+spec: {clusterQueue: cqd-team-a}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata: {name: gpu-dra, namespace: team-b}
+spec: {clusterQueue: cqd-team-b}

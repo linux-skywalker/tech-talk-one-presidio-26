@@ -1,0 +1,24 @@
+=== s5 / dra-kueue / run 0 (052324-s5-dra-kueue-0) ===
+  [05:23:29 +  1s] submitted serve (team a, 3 units, priority inference)
+  [05:24:23 +  0s] submitted a1 (trainm, team a, 3 units)
+  [05:24:23 +  0s] submitted a2 (trains, team a, 1 units)
+  [05:24:23 +  0s] submitted a3 (trainm, team a, 3 units)
+  [05:24:23 +  0s] submitted b1 (trains, team b, 1 units)
+  [05:24:23 +  0s] submitted b2 (trainm, team b, 3 units)
+  [05:24:23 +  0s] submitted b3 (trains, team b, 1 units)
+  [05:24:47 + 24s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8734 MiB, power 145.06 W, temp 53 C
+  [05:25:11 + 48s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8734 MiB, power 143.38 W, temp 55 C
+  [05:25:35 + 72s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8734 MiB, power 143.79 W, temp 57 C
+  [05:26:00 + 97s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8734 MiB, power 146.21 W, temp 59 C
+  [05:26:24 +121s] jobs done 1, failed 0 of 6; Running=1  GPU busy 0 %, mem 4993 MiB, power 79.45 W, temp 54 C
+  [05:26:48 +145s] jobs done 3, failed 0 of 6; Running=1  GPU busy 99 %, mem 9166 MiB, power 171.91 W, temp 60 C
+  [05:27:12 +169s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 169.00 W, temp 62 C
+  [05:27:37 +194s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 172.59 W, temp 62 C
+  [05:28:01 +218s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 172.39 W, temp 63 C
+  [05:28:25 +242s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 170.04 W, temp 63 C
+  [05:28:50 +267s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 8360 MiB, power 171.73 W, temp 61 C
+  [05:29:14 +291s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 169.94 W, temp 63 C
+  [05:29:38 +315s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 169.18 W, temp 64 C
+  [05:30:02 +339s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 173.34 W, temp 63 C
+  [05:30:26 +363s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9166 MiB, power 169.75 W, temp 63 C
+  [05:30:50 +387s] jobs done 5, failed 0 of 6; Running=1  GPU busy 100 %, mem 7686 MiB, power 169.38 W, temp 62 C

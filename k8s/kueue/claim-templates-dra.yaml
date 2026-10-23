@@ -1,0 +1,72 @@
+# Memory requests per workload kind for the DRA + Kueue test (server 5Gi, medium training 4.5Gi, small training 2Gi; sum of server + one medium + one small = 11.5Gi fits the card).
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-serve, namespace: team-a}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 5Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-trainm, namespace: team-a}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 4608Mi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-trains, namespace: team-a}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 2Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-serve, namespace: team-b}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 5Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-trainm, namespace: team-b}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 4608Mi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-trains, namespace: team-b}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 2Gi}}

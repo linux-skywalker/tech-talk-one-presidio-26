@@ -6,8 +6,12 @@ HF_HOST=$HOME/.cache/huggingface
 # GPU replicas a workload asks for: weights in memory-shaped units (about 1.5 GB each); the plain arm asks for 1 like today.
 units() { [ "$ARM" = plain ] && { echo 1; return; }; case $1 in serve) echo 3;; trainm) echo 3;; trains) echo 1;; esac; }
 weight() { case $1 in serve) echo 3;; trainm) echo 3;; trains) echo 1;; esac; }   # for the GPU-share metric, same in every arm
-is_kueue() { [ "$ARM" = kueue ] || [ "$ARM" = kueue-nopreempt ]; }
-qlabels() { is_kueue && printf 'kueue.x-k8s.io/queue-name: gpu'; }
+is_kueue() { [ "$ARM" = kueue ] || [ "$ARM" = kueue-nopreempt ] || [ "$ARM" = dra-kueue ]; }
+is_dra() { [ "$ARM" = dra-kueue ]; }
+rtc() { is_dra || echo "      runtimeClassName: nvidia"; }   # DRA injects the GPU through CDI, no runtime class
+gpures() { if is_dra; then echo "resources: {claims: [{name: g}]}"; else echo "resources: {limits: {nvidia.com/gpu: $(units "$1")}}"; fi; }
+podclaims() { is_dra && echo "      resourceClaims: [{name: g, resourceClaimTemplateName: gpu-$1}]"; }
+qlabels() { is_dra && { printf 'kueue.x-k8s.io/queue-name: gpu-dra'; return; }; is_kueue && printf 'kueue.x-k8s.io/queue-name: gpu'; }
 plabels() { is_kueue && printf 'kueue.x-k8s.io/priority-class: %s' "$1"; }
 
 mk_train() { # name namespace kind(trainm|trains) priority
@@ -27,7 +31,7 @@ spec:
       labels: {app: kq-train, kq-job: $n}
     spec:
       restartPolicy: Never
-      runtimeClassName: nvidia
+$(rtc)
       containers:
       - name: train
         image: localhost:5000/gpu-train:v1
@@ -40,7 +44,8 @@ spec:
         - {name: HF_HUB_OFFLINE, value: "1"}
         - {name: HF_DATASETS_OFFLINE, value: "1"}
         volumeMounts: [{name: hf, mountPath: /hf}, {name: out, mountPath: /out}]
-        resources: {limits: {nvidia.com/gpu: $(units "$kind")}}
+        $(gpures "$kind")
+$(podclaims "$kind")
       volumes:
       - {name: hf, hostPath: {path: $HF_HOST, type: Directory}}
       - {name: out, hostPath: {path: /tmp/kq-out, type: DirectoryOrCreate}}
@@ -64,7 +69,7 @@ spec:
     metadata:
       labels: {app: serve, kq-kind: serve, $(plabels "$prio")}
     spec:
-      runtimeClassName: nvidia
+$(rtc)
       containers:
       - name: vllm
         image: localhost:5000/gpu-serve:v1
@@ -76,7 +81,8 @@ spec:
         ports: [{containerPort: 8000}]
         volumeMounts: [{name: hf, mountPath: /hf, readOnly: true}]
         readinessProbe: {httpGet: {path: /v1/models, port: 8000}, periodSeconds: 2}
-        resources: {limits: {nvidia.com/gpu: $(units serve)}}
+        $(gpures serve)
+$(podclaims serve)
       volumes:
       - {name: hf, hostPath: {path: $HF_HOST, type: Directory}}
 ---
@@ -93,13 +99,17 @@ YAML
 submit_train() { mk_train "$@" | kubectl apply -f - >/dev/null; echo "$1 $2 $3 $(date +%s.%N)" >> "$RUN/submits.txt"; tl "submitted $1 ($3, team ${2#team-}, $(units "$3") units)"; }
 submit_serve() { mk_serve "$@" | kubectl apply -f - >/dev/null; echo "serve $1 serve $(date +%s.%N)" >> "$RUN/submits.txt"; tl "submitted serve (team ${1#team-}, $(units serve) units, priority $2)"; }
 
-kq_reset() { # clean slate: no team workloads, time slicing x8 on, GPU free, queue settings per arm
+kq_reset() { # clean slate: no team workloads, GPU free; device plugin arms: time slicing x8 on; DRA arm: device plugin stays off
   for ns in team-a team-b; do kubectl delete jobs,deploy,svc --all -n $ns --wait=true >/dev/null 2>&1; done
   kubectl delete workloads.kueue.x-k8s.io --all -A --wait=true >/dev/null 2>&1
-  kubectl apply -f k8s/time-slicing-8.yaml >/dev/null
-  kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-8","default":"any"}}}}' >/dev/null
-  for i in $(seq 1 60); do [ "$(gpu_node_alloc)" = 8 ] && break; sleep 3; done
   local pol=LowerPriority; [ "$ARM" = kueue-nopreempt ] && pol=Never
-  for cq in cq-team-a cq-team-b; do kubectl patch clusterqueue $cq --type merge -p "{\"spec\":{\"preemption\":{\"withinClusterQueue\":\"$pol\"}}}" >/dev/null; done
+  if is_dra; then
+    for cq in cqd-team-a cqd-team-b; do kubectl patch clusterqueue $cq --type merge -p "{\"spec\":{\"preemption\":{\"withinClusterQueue\":\"$pol\"}}}" >/dev/null; done
+  else
+    kubectl apply -f k8s/time-slicing-8.yaml >/dev/null
+    kubectl patch clusterpolicies.nvidia.com/cluster-policy --type merge -p '{"spec":{"devicePlugin":{"config":{"name":"time-slicing-8","default":"any"}}}}' >/dev/null
+    for i in $(seq 1 60); do [ "$(gpu_node_alloc)" = 8 ] && break; sleep 3; done
+    for cq in cq-team-a cq-team-b; do kubectl patch clusterqueue $cq --type merge -p "{\"spec\":{\"preemption\":{\"withinClusterQueue\":\"$pol\"}}}" >/dev/null; done
+  fi
   wait_gpu_free || { echo "GPU not free"; return 1; }
 }
