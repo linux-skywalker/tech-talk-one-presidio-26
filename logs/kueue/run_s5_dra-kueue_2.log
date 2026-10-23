@@ -1,0 +1,61 @@
+=== s5 / dra-kueue / run 2 (054228-s5-dra-kueue-2) ===
+  [05:42:33 +  0s] submitted serve (team a, 3 units, priority inference)
+  [05:43:25 +  0s] submitted a1 (trainm, team a, 3 units)
+  [05:43:25 +  0s] submitted a2 (trains, team a, 1 units)
+  [05:43:25 +  0s] submitted a3 (trainm, team a, 3 units)
+  [05:43:25 +  0s] submitted b1 (trains, team b, 1 units)
+  [05:43:25 +  0s] submitted b2 (trainm, team b, 3 units)
+  [05:43:25 +  0s] submitted b3 (trains, team b, 1 units)
+  [05:43:49 + 24s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8707 MiB, power 145.58 W, temp 57 C
+  [05:44:13 + 48s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8707 MiB, power 149.09 W, temp 60 C
+  [05:44:37 + 72s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8707 MiB, power 148.13 W, temp 60 C
+  [05:45:02 + 97s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 8707 MiB, power 146.83 W, temp 61 C
+  [05:45:26 +121s] jobs done 2, failed 0 of 6; Running=1  GPU busy 0 %, mem 4966 MiB, power 104.41 W, temp 55 C
+  [05:45:50 +145s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 170.77 W, temp 62 C
+  [05:46:15 +170s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 173.46 W, temp 63 C
+  [05:46:39 +194s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 170.26 W, temp 63 C
+  [05:47:03 +218s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 171.04 W, temp 64 C
+  [05:47:27 +242s] jobs done 3, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 170.29 W, temp 64 C
+  [05:47:51 +266s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 8829 MiB, power 169.13 W, temp 63 C
+  [05:48:15 +290s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 173.26 W, temp 63 C
+  [05:48:40 +315s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 173.39 W, temp 64 C
+  [05:49:04 +339s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 172.08 W, temp 63 C
+  [05:49:28 +363s] jobs done 4, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 172.35 W, temp 63 C
+  [05:49:52 +387s] jobs done 5, failed 0 of 6; Running=1  GPU busy 100 %, mem 8133 MiB, power 171.85 W, temp 62 C
+  [05:50:16 +411s] jobs done 5, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 175.82 W, temp 63 C
+  [05:50:41 +436s] jobs done 5, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 170.44 W, temp 63 C
+  [05:51:05 +460s] jobs done 5, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 169.78 W, temp 63 C
+  [05:51:29 +484s] jobs done 5, failed 0 of 6; Running=1  GPU busy 100 %, mem 9139 MiB, power 172.30 W, temp 63 C
+  scenario                         s5
+  arm                              dra-kueue
+  rep                              2
+  duration_s                       500
+  queue_wait_s                     {'serve': 1, 'a1': 248, 'a2': 2, 'a3': 373, 'b1': 0, 'b2': 120, 'b3': 1}
+  wait_train_median_s              120
+  wait_train_max_s                 373
+  wait_team_A_max_s                373
+  wait_team_B_max_s                120
+  jobs_total                       6
+  jobs_done                        6
+  jobs_failed                      0
+  makespan_s                       499
+  jobs_per_hour                    43.3
+  pods_failed                      0
+  pods_with_oom                    0
+  restarts_serve                   0
+  preempted_workloads              ['job-a1-b259c', 'job-a2-d3406']
+  evictions                        2
+  gpu_util_avg                     94
+  gpu_mem_max_mib                  9139
+  dcgm_avg_util                    92
+  waiting_job_seconds              738
+  waiting_while_mem_below_9GB_s    426
+  waiting_while_util_below_50_s    40
+  unit_seconds_A                   2505
+  unit_seconds_B                   601
+  share_A_pct                      81
+  probe_ok                         327
+  probe_err                        0
+  ttft_p50_s                       0.022
+  ttft_p95_s                       0.037
+  latency_p95_s                    1.651
