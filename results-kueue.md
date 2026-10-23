@@ -26,3 +26,25 @@ Setup: the Qwen2.5-1.5B server is already running, then 6 SmolLM2 training jobs 
 | Preempted workloads | 0 (range 0 to 0) | 1 (range 1 to 1) |
 
 What this shows: across 3 runs per arm, without a queue only 2 to 4 of the 6 jobs finished (the rest crashed with CUDA out-of-memory after retries), and with Kueue all 6 finished every time with no crashed pod and almost identical timings. Kueue's cost was time: the last job finished about 2.5 to 3 times later, because jobs waited for room. The server's p95 was higher with Kueue because the server was serving next to training for much longer. Limits: jobs per hour for the plain arm counts only the jobs that finished; "memory-shaped units" are our own sizing; the quota counts units, not real memory; one machine.
+
+## Combined test: A (no queue) vs Kueue (units) vs B (DRA + Kueue in GiB), 3 runs each
+Same 6-job workload, same machine, server already running. B = NVIDIA DRA driver 0.5.1 with consumable shares (memory), jobs ask for GiB of GPU memory through ResourceClaimTemplates (server 5 Gi, medium 4.5 Gi, small 2 Gi), Kueue 0.20.3 capacity-based quota (alpha gate KueueDRAIntegrationConsumableCapacity), 5.5 Gi per team with borrowing. Device plugin off during B. B trial run 0 not counted. Raw: `logs/kueue/s5_dra-kueue_<n>/`, `logs/dra/consumable-probe.txt`, manifests `k8s/kueue/queues-dra.yaml`, `claim-templates-dra.yaml`, `dra-capacity.yaml`.
+
+| Mean of 3 runs (range) | A: no queue | Kueue (units) | B: DRA + Kueue (GiB) |
+|---|---|---|---|
+| Jobs finished of 6 | 3 (2 to 4) | 6 (6 to 6) | 6 (6 to 6) |
+| Pods failed | 17 (16 to 18) | 0 (0 to 0) | 0 (0 to 0) |
+| Pods with CUDA out-of-memory | 16 (15 to 17) | 0 (0 to 0) | 0 (0 to 0) |
+| Time to last finished job (s) | 209 (174 to 268) | 498 (497 to 499) | 507 (499 to 519) |
+| Jobs finished per hour | 51.5 (38.8 to 62.0) | 43.4 (43.3 to 43.4) | 42.6 (41.6 to 43.3) |
+| Longest wait to start, team A (s) | 0 (0 to 0) | 372 (372 to 372) | 381 (373 to 393) |
+| Longest wait to start, team B (s) | 0 (0 to 0) | 127 (126 to 127) | 128 (120 to 141) |
+| Jobs waiting while GPU memory under 9 GB (job-s) | 179 (44 to 248) | 78 (76 to 80) | 429 (426 to 430) |
+| GPU busy, DCGM (%) | 87 (80 to 92) | 95 (94 to 95) | 94 (92 to 95) |
+| GPU time share of team A (%) | 73 (60 to 83) | 75 (75 to 75) | 81 (81 to 82) |
+| Server reply p95 (s) | 1.40 (1.27 to 1.46) | 1.85 (1.84 to 1.85) | 1.65 (1.62 to 1.67) |
+| Server requests answered | 140 (117 to 179) | 320 (320 to 321) | 334 (327 to 344) |
+
+Preempted workloads in B: 1, 2, 1 (runs 1 to 3).
+
+What this shows: B matched the unit-based Kueue arm on outcome (6 of 6, 0 failed pods) with about the same time to finish (507 s vs 498 s, ranges overlap in part) and jobs per hour (42.6 vs 43.4). Both beat the no-queue arm on finishing jobs and lost on speed. B did not finish faster, and jobs waited longer while GPU memory sat under 9 GB (429 vs 78 job-seconds); we did not test why, a likely factor is that the GiB requests are fixed sizes and the quota is whole-claim. Server p95 was 1.65 s in B vs 1.85 s with unit Kueue (n=3 each, ranges do not overlap), not tested whether claim sizing caused it. What the device plugin cannot do and DRA did here: three pods asking for 3, 5 and 6 GiB of the one card: 3 and 5 ran together, 6 stayed Pending (`logs/dra/consumable-probe.txt`, n=1). Limits: one machine, one workload, alpha Kueue feature, DRA pod startup time not measured.
