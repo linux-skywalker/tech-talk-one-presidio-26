@@ -1,0 +1,7 @@
+scenario,arm,rep,job,team,kind,submit_s,admitted_s,start_s,finish_s,status,wait_to_start_s
+s5,dra-kueue,0,a1,A,trainm,0,249,249,375,ok,249
+s5,dra-kueue,0,a2,A,trains,0,2,2,121,ok,2
+s5,dra-kueue,0,a3,A,trainm,0,376,377,504,ok,377
+s5,dra-kueue,0,b1,B,trains,0,1,1,120,ok,0
+s5,dra-kueue,0,b2,B,trainm,0,122,122,248,ok,121
+s5,dra-kueue,0,b3,B,trains,0,1,2,121,ok,1
