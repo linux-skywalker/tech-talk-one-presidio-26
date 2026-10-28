@@ -2,6 +2,12 @@
 
 Proof of concept for the tech talk of the same name (India Exchange 2026, Presidio). The same GPU workloads are run two ways on one consumer card, an RTX 4070 (12 GB) on Ubuntu 24.04 with k3s, so every claim in the talk is backed by a measured run.
 
+## Demo video
+
+[![Watch the demo: MPS, Kueue and DRA, before and after](video/final/thumbnail.jpg)](https://github.com/linux-skywalker/tech-talk-one-presidio-26/blob/main/video/final/all-demos.mp4)
+
+Click the picture to play the video (about 2 minutes). Each demo runs the same workload without and with the technique, one terminal after the other.
+
 ## What is in here
 
 | Technique | What we ran | Results |
