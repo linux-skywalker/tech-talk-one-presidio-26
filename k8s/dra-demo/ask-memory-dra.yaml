@@ -1,0 +1,113 @@
+# The same three pods, but each one asks Kubernetes for the GPU memory it needs (3, 5 and 6 GiB) through a ResourceClaimTemplate (DRA consumable shares).
+# Used for the 'with DRA' take.
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: team-a-3gib, labels: {app: askdemo, need: "3"}}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      n = 3
+      time.sleep(0)
+      print("needs 3 GiB", flush=True)
+      try:
+          x = torch.empty(n * 2**30, dtype=torch.uint8, device="cuda")
+          print("got 3 GiB", flush=True)
+          time.sleep(30)
+      except Exception as e:
+          print("OUT OF MEMORY", flush=True)
+          raise SystemExit(1)
+    resources: {claims: [{name: g}]}
+  resourceClaims: [{name: g, resourceClaimTemplateName: ask-3gib}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: team-b-5gib, labels: {app: askdemo, need: "5"}}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      n = 5
+      time.sleep(3)
+      print("needs 5 GiB", flush=True)
+      try:
+          x = torch.empty(n * 2**30, dtype=torch.uint8, device="cuda")
+          print("got 5 GiB", flush=True)
+          time.sleep(30)
+      except Exception as e:
+          print("OUT OF MEMORY", flush=True)
+          raise SystemExit(1)
+    resources: {claims: [{name: g}]}
+  resourceClaims: [{name: g, resourceClaimTemplateName: ask-5gib}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: team-c-6gib, labels: {app: askdemo, need: "6"}}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      n = 6
+      time.sleep(6)
+      print("needs 6 GiB", flush=True)
+      try:
+          x = torch.empty(n * 2**30, dtype=torch.uint8, device="cuda")
+          print("got 6 GiB", flush=True)
+          time.sleep(30)
+      except Exception as e:
+          print("OUT OF MEMORY", flush=True)
+          raise SystemExit(1)
+    resources: {claims: [{name: g}]}
+  resourceClaims: [{name: g, resourceClaimTemplateName: ask-6gib}]
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: ask-3gib}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 3Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: ask-5gib}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 5Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: ask-6gib}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 6Gi}}

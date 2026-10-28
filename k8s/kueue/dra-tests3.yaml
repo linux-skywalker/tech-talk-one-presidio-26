@@ -1,0 +1,43 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-10gi}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          selectors:
+          - cel: {expression: 'device.capacity["gpu.nvidia.com"].memory.compareTo(quantity("10Gi")) >= 0'}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-20gi}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          selectors:
+          - cel: {expression: 'device.capacity["gpu.nvidia.com"].memory.compareTo(quantity("20Gi")) >= 0'}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: cel-10}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 40"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimTemplateName: gpu-10gi}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: cel-20}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 40"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimTemplateName: gpu-20gi}]

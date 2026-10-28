@@ -1,0 +1,3 @@
+team-a pod/serve-67bb489dcb-xggtq 0
+team-a pod/t1-65wzx 0
+team-a pod/t2-w9smn 0

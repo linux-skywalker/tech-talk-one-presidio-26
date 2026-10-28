@@ -1,0 +1,19 @@
+# Kueue managing a DRA device. Needs the Kueue Configuration to map the DeviceClass to a quota name (resources.deviceClassMappings),
+# applied by scripts/demo/kueue/dra-extra.sh. One GPU device = quota 1: Kueue admits one job at a time and holds the rest before any pod exists.
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata: {name: cq-dra}
+spec:
+  namespaceSelector: {}
+  queueingStrategy: BestEffortFIFO
+  resourceGroups:
+  - coveredResources: ["nvidia.com/dra-gpu"]
+    flavors:
+    - name: rtx4070
+      resources:
+      - {name: nvidia.com/dra-gpu, nominalQuota: 1}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata: {name: dra, namespace: default}
+spec: {clusterQueue: cq-dra}

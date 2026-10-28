@@ -1,0 +1,11 @@
+[04:00:54] === setting mps2: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[04:01:42] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
+[04:02:44] mps2 pair run 1 job a: ok runtime 49.31s steps/s 1.014 (GPU busy 75%, mem 4149 MiB)
+[04:02:44] mps2 pair run 1 job b: ok runtime 49.31s steps/s 1.014 (GPU busy 75%, mem 4149 MiB)
+[04:03:45] mps2 pair run 2 job a: ok runtime 48.82s steps/s 1.024 (GPU busy 80%, mem 4165 MiB)
+[04:03:45] mps2 pair run 2 job b: ok runtime 48.8s steps/s 1.025 (GPU busy 80%, mem 4165 MiB)
+[04:05:20] mps2 serve alone: ok 27 fail 0 p50 0.481s p95 0.481s ttft p50 0.012s p95 0.013s
+[04:07:33] mps2 serve+train run 1: train ok 117.8s steps/s 0.306 | serve ok 86 fail 0 p50 0.847s p95 0.875s ttft p95 0.021s | restarts 0 | GPU busy 93% mem 9067 MiB
+[04:09:46] mps2 serve+train run 2: train ok 117.7s steps/s 0.306 | serve ok 86 fail 0 p50 0.847s p95 0.873s ttft p95 0.021s | restarts 0 | GPU busy 93% mem 9067 MiB
+[04:10:04] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:10:04] === setting mps2 done ===

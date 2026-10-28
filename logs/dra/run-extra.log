@@ -1,0 +1,30 @@
+== DRA extra tests, 2026-10-23 03:22:34, RTX 4070, DRA driver 0.5.1 with TimeSlicingSettings and MPSSupport, device plugin off ==
+Memory test, DRA claim with ts, single run (two pods, one claim, 11.6 GiB card), took 87 s:
+    steady sees free=10.7 total=11.6 GiB
+    steady holds 3 GiB
+    steady GREW by 2 GiB: OK
+    greedy sees free=10.7 total=11.6 GiB
+    [W1022 21:52:51.509911625 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1073741824 bytes (free: 785186816, total: 12449021952).
+    [W1022 21:52:51.509955439 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1073741824 bytes (free: 785186816, total: 12449021952).
+    greedy stopped at 7 GiB: OutOfMemoryError
+Memory test, DRA claim with mps, single run (two pods, one claim, 11.6 GiB card), took 90 s:
+    steady sees free=4.9 total=11.6 GiB
+    steady holds 3 GiB
+    [W1022 21:55:13.089194621 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2147483648 bytes (free: 2057988752, total: 12449021952).
+    [W1022 21:55:13.089218263 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2147483648 bytes (free: 2057988752, total: 12449021952).
+    steady could NOT grow by 2 GiB: OutOfMemoryError
+    greedy sees free=4.9 total=11.6 GiB
+    [W1022 21:54:28.100244849 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1073741824 bytes (free: 984246928, total: 12449021952).
+    [W1022 21:54:28.100264079 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1073741824 bytes (free: 984246928, total: 12449021952).
+    greedy stopped at 4 GiB: OutOfMemoryError
+Warning: resource configmaps/kueue-manager-config is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+Three small training jobs on one DRA device, through Kueue (quota nvidia.com/dra-gpu = 1) (single run): all done after 107 s; most pods existing at once 3, most Pending pods at once 0
+    k1 completed +35 s
+    k2 completed +71 s
+    k3 completed +107 s
+Three small training jobs on one DRA device, plain (no queue) (single run): all done after 105 s; most pods existing at once 3, most Pending pods at once 2
+    p1 completed +35 s
+    p2 completed +70 s
+    p3 completed +104 s
+reverted: nvidia.com/gpu allocatable 8, device plugin Running
+EXIT

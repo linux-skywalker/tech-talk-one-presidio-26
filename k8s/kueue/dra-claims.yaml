@@ -1,0 +1,27 @@
+# Claims used by scripts/demo/kueue/dra-data.sh: a shared claim with time slicing (needs the driver feature gate TimeSlicingSettings) and an exclusive-claim template.
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaim
+metadata: {name: ts-gpu}
+spec:
+  devices:
+    requests:
+    - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}
+    config:
+    - requests: ["gpu"]
+      opaque:
+        driver: gpu.nvidia.com
+        parameters:
+          apiVersion: resource.nvidia.com/v1beta1
+          kind: GpuConfig
+          sharing:
+            strategy: TimeSlicing
+            timeSlicingConfig: {interval: Long}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: one-gpu}
+spec:
+  spec:
+    devices:
+      requests:
+      - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}

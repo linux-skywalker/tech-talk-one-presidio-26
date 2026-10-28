@@ -1,0 +1,35 @@
+# DRA experiments on the single RTX 4070 (NVIDIA DRA driver 0.5.1, device plugin disabled). No runtimeClassName: the driver injects the GPU through CDI.
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: one-gpu}
+spec:
+  spec:
+    devices:
+      requests:
+      - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: dra-a}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["sh", "-c", "nvidia-smi -L; sleep 60"]
+    resources: {claims: [{name: g}]}
+  resourceClaims:
+  - {name: g, resourceClaimTemplateName: one-gpu}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: dra-b}
+spec:
+  restartPolicy: Never
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["sh", "-c", "nvidia-smi -L; sleep 60"]
+    resources: {claims: [{name: g}]}
+  resourceClaims:
+  - {name: g, resourceClaimTemplateName: one-gpu}

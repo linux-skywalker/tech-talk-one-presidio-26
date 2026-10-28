@@ -1,0 +1,41 @@
+path,step,seconds,exit_code
+trad,"create venv",0,1
+trad,"create venv (uv)",0,0
+trad,"install vllm (pulls torch+CUDA)",131,0
+trad,"install trl peft datasets accelerate",4,0
+trad,"fine-tune 3 epochs (smoke run, wall incl. wait)",303,0
+trad,"vLLM start to first answer (after fixing nvcc + memory)",75,0
+k8s,"phase2_install.sh (toolkit + docker runtime + k3s), warm",156,0
+k8s,"k3s cgroup v1 fix (config.yaml + restart)",60,0
+k8s,"docker build train image",260,0
+k8s,"docker build serve image",332,0
+k8s,"apply training Job to pod Running (first run, includes image pull)",36,0
+k8s,"training Job total (13 min incl. one pod-delete and resume)",780,0
+k8s,"apply serve Deployment to first answer (image pull + vLLM start)",126,0
+k8s,"delete serve pod to answering again",103,0
+k8s,"delete train pod to training resumed (checkpoint-75)",98,0
+k8s,"Operator helm install to nvidia.com/gpu=1 (warm images, incl. manual label)",23,0
+k8s,"monitoring: helm install kube-prometheus-stack to Grafana up",63,0
+k8s,"recovery after WSL restart: mount fix + k3s restart + cleanup (leftover toolkit dir) + k3s-killall",1800,0
+ubuntu-trad,"uv venv python 3.10",1,0
+ubuntu-trad,"install vllm+torch (cold cache)",106,0
+ubuntu-trad,"install training libs",3,0
+ubuntu-trad,"fine-tune 900 steps (cold model/dataset download)",639,0
+ubuntu-trad,"vllm serve start to ready, GPU_UTIL=0.4",48,0
+ubuntu-trad,"kill test: resume by hand to done (from checkpoint-350)",338,0
+ubuntu-k8s,"Operator helm install to nvidia.com/gpu=1 (no workarounds, images cold)",33,0
+ubuntu-k8s,"monitoring: helm install kube-prometheus-stack to Grafana up (cold)",53,0
+ubuntu-k8s,"docker build+push gpu-train (cold)",258,0
+ubuntu-k8s,"docker build+push gpu-serve (cold)",601,0
+ubuntu-k8s,"training pod delete to new pod Running (resumed from checkpoint-150)",34,0
+ubuntu-k8s,"train Job complete incl one pod delete + resume (Job startTime to completionTime)",679,0
+ubuntu-k8s,"serve Deployment apply to model listed (tuned adapter)",101,0
+ubuntu-k8s,"serve pod delete to answering again (no human)",81,0
+ubuntu-k8s,"sharing: time slicing enabled, allocatable 4 and 2nd pod scheduled in 9 s, but train-share OOM twice (CUDA out of memory, serve holds ~4.9 GB)",9,1
+ubuntu-k8s,"sharing with serve-small (0.5B): Pending, then time slicing, both serving; 1.5B 546 tok/s + 0.5B 1046 tok/s concurrently, peak 8.4 GB",0,0
+ubuntu-k8s,"Operator driver.enabled=true: driver DaemonSet created then removed in under 1 s, node label gpu.deploy.driver=pre-installed, host driver 590.48.01 untouched, Operator did NOT install a driver",0,0
+ubuntu-k8s,"Operator toolkit.enabled=true: overwrote k3s containerd config with a 56 byte stub, node NotReady (cni plugin not initialized), helm rollback hung, needed sudo cleanup twice (stub came back when toolkit pod was removed)",0,1
+ubuntu-k8s,"clean uninterrupted train Job, apply to complete (cold PVC and model download)",676,0
+ubuntu-k8s,"training pod delete to first training step logged after resume (checkpoint-325, from pod log timestamps, +-3 s)",51,0
+ubuntu-trad,"vllm kill -9: stayed dead 30+ s, nothing restarted it; manual restart to answering (warm)",28,0
+ubuntu-k8s,"MPS test: per-pod memory limit works on RTX 4070 (greedy stops at 5 GiB, steady grows 3 to 5 GiB); time slicing control: steady cannot grow",37,0

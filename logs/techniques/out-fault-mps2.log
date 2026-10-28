@@ -1,0 +1,10 @@
+[04:24:34] sharing mps2 -> node advertises nvidia.com/gpu=2 strategy=mps replicas=2
+[04:24:34] === extra test fault under mps2 (nvidia.com/gpu=2 strategy=mps replicas=2) ===
+[04:25:01] fault mps2 run 1: killing job fa (container main process host pid 665590) with a forced delete (SIGKILL, no grace period)
+[04:25:06] fault mps2 run 1: process 665590 gone after kill (checked in /proc): yes
+[04:26:00] fault mps2 run 1: job fa (killed) -> unfinished; job fb -> ok, runtime 74.14s, 59 s after the kill; error in fb log: none
+[04:26:27] fault mps2 run 2: killing job fa (container main process host pid 668312) with a forced delete (SIGKILL, no grace period)
+[04:26:33] fault mps2 run 2: process 668312 gone after kill (checked in /proc): yes
+[04:27:26] fault mps2 run 2: job fa (killed) -> unfinished; job fb -> ok, runtime 74.04s, 59 s after the kill; error in fb log: none
+[04:27:47] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:27:47] === extra test fault under mps2 done ===

@@ -1,0 +1,1 @@
+nvidia.com/gpu=2 strategy=mps replicas=2

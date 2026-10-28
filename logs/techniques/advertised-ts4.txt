@@ -1,0 +1,1 @@
+nvidia.com/gpu=4 strategy=time-slicing replicas=4

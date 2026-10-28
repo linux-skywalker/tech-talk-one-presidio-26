@@ -1,0 +1,14 @@
+Pod startup (device plugin, time slicing x8 advertised)
+plugin 1 Succeeded created_to_started_s=1 created_to_finished_s=1
+GPU 0: NVIDIA GeForce RTX 4070 (UUID: GPU-f04e97ad-db28-af12-b59a-202645617930)
+plugin 2 Succeeded created_to_started_s=0 created_to_finished_s=0
+GPU 0: NVIDIA GeForce RTX 4070 (UUID: GPU-f04e97ad-db28-af12-b59a-202645617930)
+plugin 3 Succeeded created_to_started_s=1 created_to_finished_s=1
+GPU 0: NVIDIA GeForce RTX 4070 (UUID: GPU-f04e97ad-db28-af12-b59a-202645617930)
+Pod startup (DRA claim, driver 0.5.1)
+dra 1 Succeeded created_to_started_s=0 created_to_finished_s=0
+GPU 0: NVIDIA GeForce RTX 4070 (UUID: GPU-f04e97ad-db28-af12-b59a-202645617930)
+dra 2 Succeeded created_to_started_s=1 created_to_finished_s=1
+GPU 0: NVIDIA GeForce RTX 4070 (UUID: GPU-f04e97ad-db28-af12-b59a-202645617930)
+dra 3 Succeeded created_to_started_s=0 created_to_finished_s=0
+GPU 0: NVIDIA GeForce RTX 4070 (UUID: GPU-f04e97ad-db28-af12-b59a-202645617930)

@@ -1,0 +1,52 @@
+=== s3 / plain / run 1 (030722-s3-plain-1) ===
+  [03:07:26 +  0s] submitted a1 (trainm, team a, 1 units)
+  [03:07:26 +  0s] submitted a2 (trainm, team a, 1 units)
+  [03:07:26 +  0s] submitted a3 (trainm, team a, 1 units)
+  [03:07:26 +  0s] submitted a4 (trainm, team a, 1 units)
+  [03:07:26 +  0s] submitted a5 (trainm, team a, 1 units)
+  [03:07:51 + 25s] submitted b1 (trainm, team b, 1 units)
+  [03:07:51 + 25s] submitted b2 (trainm, team b, 1 units)
+  [03:08:15 + 49s] jobs done 0, failed 0 of 7;  GPU busy 100 %, mem 10903 MiB, power 159.87 W, temp 52 C
+  [03:08:39 + 73s] jobs done 0, failed 0 of 7;  GPU busy 100 %, mem 4756 MiB, power 167.29 W, temp 54 C
+  [03:09:03 + 97s] jobs done 0, failed 0 of 7;  GPU busy 100 %, mem 11501 MiB, power 154.90 W, temp 58 C
+  [03:09:28 +122s] jobs done 0, failed 4 of 7;  GPU busy 100 %, mem 8360 MiB, power 160.97 W, temp 59 C
+  [03:09:52 +146s] jobs done 0, failed 4 of 7;  GPU busy 100 %, mem 11511 MiB, power 167.57 W, temp 61 C
+  [03:10:16 +170s] jobs done 0, failed 4 of 7;  GPU busy 100 %, mem 8344 MiB, power 168.35 W, temp 61 C
+  [03:10:41 +195s] jobs done 1, failed 4 of 7;  GPU busy 93 %, mem 4192 MiB, power 171.32 W, temp 62 C
+  [03:11:05 +219s] jobs done 1, failed 4 of 7;  GPU busy 100 %, mem 7560 MiB, power 168.57 W, temp 63 C
+  [03:11:29 +243s] jobs done 2, failed 4 of 7;  GPU busy 100 %, mem 4792 MiB, power 170.27 W, temp 63 C
+  [03:11:53 +267s] jobs done 2, failed 4 of 7;  GPU busy 100 %, mem 4792 MiB, power 172.96 W, temp 63 C
+  [03:12:17 +291s] jobs done 2, failed 4 of 7;  GPU busy 100 %, mem 4792 MiB, power 173.12 W, temp 63 C
+  scenario                         s3
+  arm                              plain
+  rep                              1
+  duration_s                       301
+  queue_wait_s                     {'a1': 0, 'a2': 0, 'a3': 0, 'a4': 0, 'a5': 0, 'b1': 0, 'b2': 0}
+  wait_train_median_s              0
+  wait_train_max_s                 0
+  wait_team_A_max_s                0
+  wait_team_B_max_s                0
+  jobs_total                       7
+  jobs_done                        3
+  jobs_failed                      4
+  makespan_s                       299
+  jobs_per_hour                    36.1
+  pods_failed                      21
+  pods_with_oom                    18
+  restarts_serve                   0
+  preempted_workloads              []
+  evictions                        0
+  gpu_util_avg                     90
+  gpu_mem_max_mib                  11836
+  dcgm_avg_util                    91
+  waiting_job_seconds              316
+  waiting_while_mem_below_9GB_s    192
+  waiting_while_util_below_50_s    36
+  unit_seconds_A                   1020
+  unit_seconds_B                   1212
+  share_A_pct                      46
+  probe_ok                         0
+  probe_err                        0
+  ttft_p50_s                       None
+  ttft_p95_s                       None
+  latency_p95_s                    None

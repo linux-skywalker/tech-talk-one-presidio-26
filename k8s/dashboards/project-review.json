@@ -1,0 +1,1206 @@
+{
+ "uid": "gpu-review",
+ "title": "GPU on Kubernetes: Project Review",
+ "tags": [
+  "gpu",
+  "review"
+ ],
+ "timezone": "browser",
+ "schemaVersion": 41,
+ "version": 1,
+ "refresh": "5s",
+ "time": {
+  "from": "now-15m",
+  "to": "now"
+ },
+ "editable": true,
+ "panels": [
+  {
+   "type": "text",
+   "title": "Review: Kubernetes + NVIDIA for GPU workloads",
+   "options": {
+    "mode": "markdown",
+    "content": "\n**Goal.** Show that Kubernetes with NVIDIA's GPU Operator makes GPU work easier to run than the traditional manual way: same model (Qwen2.5-1.5B-Instruct, LoRA fine-tune, served with vLLM), done twice.\n\n**Machine.** One RTX 4070 (12 GB), native Ubuntu 24.04, driver 590.48.01, k3s, GPU Operator v26.7.2. All numbers below are **single runs on this machine**.\n\n**What we proved**\n- **Self-healing:** a killed training job stays dead on the manual path; on Kubernetes it is training again in about 28 s with nobody involved (force-deleted pod; 27 and 28 s in two runs). A killed server is back and answering in 77 to 81 s.\n- **Sharing:** one GPU, six models. GPU busy 38% for one model alone, 93% with six sharing the card (same traffic per model). All six answer in about 0.4 s.\n- **Visibility:** live GPU and pod metrics (this dashboard) come with the stack.\n- **No penalty:** speed and GPU utilization are the same as the manual way.\n\n**What we did not prove:** Kubernetes is not faster, and the first-time setup took about twice as long (images). Growing (more nodes) and Moving (another cloud) were not tested. MIG is covered in theory only.\n"
+   },
+   "id": 1,
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 9
+   }
+  },
+  {
+   "type": "table",
+   "title": "The six metrics: traditional vs Kubernetes + NVIDIA",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Metric,Traditional,Kubernetes + NVIDIA,What we measured,Status\nSharing,One job blocks the GPU,Jobs share it,Default scheduler: second pod stays Pending. Time slicing: scheduled in 9 s; six tiny models ran on one card at the same time GPU busy 38% for one model alone vs 93% with six sharing the card (same traffic per model) and all six answered in about 0.4 s. MPS added per-pod memory limits.,Proven\nFailures,Someone gets a message,It restarts itself,Simulated crash (kill -9 by hand; pod force-deleted on Kubernetes with no grace period). Training: by hand it stays dead until a person reruns it (finishing took 325 s); on Kubernetes training is running again about 28 s after the kill (27 and 28 s in two runs) from its last checkpoint with nobody involved; a graceful delete took 46 to 51 s. Serving: a person restarting by hand answers in 28 s; Kubernetes answered in 77 to 81 s with nobody there. Tiny-model pod kill: 39 of 40 requests OK and 6 of 6 ready in 72 s. Recovery time is mostly model startup. Two full rehearsals (28 of 28 checks each).,Proven\nWatching,Check a terminal,Live dashboards,DCGM exporter Prometheus and Grafana came up in 53 s: live GPU busy memory power temperature pod status and restarts (this dashboard). Metrics every 1 s. Panels confirmed showing live data.,Proven\nMoving,Rewrite for each cloud,Same setup runs anywhere,Kubernetes is a standard API so the same manifests apply on any conformant cluster: on-premises or in any cloud. We moved the same stack between two different hosts (WSL2 and native Ubuntu) with 0 changed lines in 4 manifests. Not run on another cloud.,By design\nSetting up,By hand on every machine,Set once applied everywhere,The same stack was set up on two different hosts: WSL2 on Windows and native Ubuntu. Same Helm install and the same manifests (0 changed lines in 4 files). On native Ubuntu the Operator found the GPU in 33 s with no workarounds (WSL2 needed 3). It runs on top of the host driver and toolkit. scripts/bootstrap.sh repeats the setup on another Ubuntu box (checked as a re-run here).,Proven\nGrowing,Rebuild a machine,Add a machine,Nodes join a running cluster in about 65 to 86 s and Kubernetes places pods on them with no manual steps (tested with 3 CPU-only VMs). The GPU Operator gave those VMs only hardware discovery and none of the GPU components because they have no NVIDIA GPU. A GPU node joining would get the full set automatically by design. Not tested: we have one GPU so no GPU capacity was added.,By design"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "left",
+      "wrapText": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "md"
+   },
+   "id": 2,
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 15
+   }
+  },
+  {
+   "id": 3,
+   "type": "row",
+   "title": "Live GPU (NVIDIA DCGM exporter)",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 24,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "type": "stat",
+   "title": "GPU busy",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "DCGM_FI_DEV_GPU_UTIL",
+     "legendFormat": "",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 60
+       },
+       {
+        "color": "red",
+        "value": 90
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    }
+   },
+   "id": 4,
+   "gridPos": {
+    "x": 0,
+    "y": 25,
+    "w": 4,
+    "h": 4
+   }
+  },
+  {
+   "type": "stat",
+   "title": "GPU memory used",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "DCGM_FI_DEV_FB_USED * 1024 * 1024",
+     "legendFormat": "",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    }
+   },
+   "id": 5,
+   "gridPos": {
+    "x": 4,
+    "y": 25,
+    "w": 4,
+    "h": 4
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Power",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "DCGM_FI_DEV_POWER_USAGE",
+     "legendFormat": "",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "watt",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    }
+   },
+   "id": 6,
+   "gridPos": {
+    "x": 8,
+    "y": 25,
+    "w": 4,
+    "h": 4
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Temperature",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "DCGM_FI_DEV_GPU_TEMP",
+     "legendFormat": "",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 75
+       },
+       {
+        "color": "red",
+        "value": 85
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    }
+   },
+   "id": 7,
+   "gridPos": {
+    "x": 12,
+    "y": 25,
+    "w": 4,
+    "h": 4
+   }
+  },
+  {
+   "type": "stat",
+   "title": "Schedulable GPUs",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum(kube_node_status_allocatable{resource=\"nvidia_com_gpu\"})",
+     "legendFormat": "",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    }
+   },
+   "id": 8,
+   "gridPos": {
+    "x": 16,
+    "y": 25,
+    "w": 4,
+    "h": 4
+   }
+  },
+  {
+   "type": "stat",
+   "title": "GPU pods Running",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum(kube_pod_status_phase{phase=\"Running\",namespace=\"default\"}) or vector(0)",
+     "legendFormat": "",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    }
+   },
+   "id": 9,
+   "gridPos": {
+    "x": 20,
+    "y": 25,
+    "w": 4,
+    "h": 4
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "GPU busy %",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "DCGM_FI_DEV_GPU_UTIL",
+     "legendFormat": "GPU busy",
+     "instant": false,
+     "range": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "min": 0,
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 12
+     },
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "id": 10,
+   "gridPos": {
+    "x": 0,
+    "y": 29,
+    "w": 12,
+    "h": 8
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "GPU memory used",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "DCGM_FI_DEV_FB_USED * 1024 * 1024",
+     "legendFormat": "used",
+     "instant": false,
+     "range": true
+    },
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "(DCGM_FI_DEV_FB_USED + DCGM_FI_DEV_FB_FREE) * 1024 * 1024",
+     "legendFormat": "total",
+     "instant": false,
+     "range": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "min": 0,
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 12
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "id": 11,
+   "gridPos": {
+    "x": 12,
+    "y": 29,
+    "w": 12,
+    "h": 8
+   }
+  },
+  {
+   "id": 12,
+   "type": "row",
+   "title": "Kubernetes behavior (kube-state-metrics and kubelet)",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 37,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Pods Running in the default namespace, by app",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "count by (pod) (kube_pod_status_phase{phase=\"Running\",namespace=\"default\"} == 1)",
+     "legendFormat": "{{pod}}",
+     "instant": false,
+     "range": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "min": 0,
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 12
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "id": 13,
+   "gridPos": {
+    "x": 0,
+    "y": 38,
+    "w": 8,
+    "h": 8
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Container restarts (self-healing at work)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"default\"})",
+     "legendFormat": "{{pod}}",
+     "instant": false,
+     "range": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "min": 0,
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 12
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "id": 14,
+   "gridPos": {
+    "x": 8,
+    "y": 38,
+    "w": 8,
+    "h": 8
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Container memory (default namespace)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"default\",container!=\"\"})",
+     "legendFormat": "{{pod}}",
+     "instant": false,
+     "range": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "min": 0,
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 12
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "id": 15,
+   "gridPos": {
+    "x": 16,
+    "y": 38,
+    "w": 8,
+    "h": 8
+   }
+  },
+  {
+   "id": 16,
+   "type": "row",
+   "title": "Measured results (RTX 4070, native Ubuntu, single runs)",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 46,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "type": "table",
+   "title": "Failure: what happens when it is killed",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Event,Traditional (by hand),Kubernetes\nTraining process killed at step 362,Stays dead. A person restarts it. Resume to done 325 s,Replacement pod training again in about 28 s (force delete). No person\nServing process killed,Stays dead until restarted. Manual restart answered in 28 s (warm),Pod replaced and answering in 77 to 81 s. No person\nTime slicing: second training job,n/a,Crashed twice with CUDA out of memory (no memory isolation)"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "left",
+      "wrapText": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "md"
+   },
+   "id": 17,
+   "gridPos": {
+    "x": 0,
+    "y": 47,
+    "w": 12,
+    "h": 7
+   }
+  },
+  {
+   "type": "table",
+   "title": "Sharing one GPU",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Setup,Memory per pod,Result\nDefault scheduler,1 GPU,Second pod stays Pending (Insufficient nvidia.com/gpu)\nTime slicing x8,No limit (each sees 10.8 GiB),6 models running; steady pod could not grow (OutOfMemory)\nMPS 2 replicas,Limit set per pod (5.9 of 11.6 GiB),Greedy pod stopped at 5 GiB; steady pod grew 3 to 5 GiB\nMIG,Hardware partitions (NVIDIA docs),Not tested: RTX 4070 has no MIG; covered in theory"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "left",
+      "wrapText": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "md"
+   },
+   "id": 18,
+   "gridPos": {
+    "x": 12,
+    "y": 47,
+    "w": 12,
+    "h": 7
+   }
+  },
+  {
+   "type": "table",
+   "title": "Full rehearsal, 20 Oct 2026: 28 of 28 checks passed in 1448 s (earlier run 28 of 28, 1441 s)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Step,This run,Earlier run\nTraining killed at step 362 (last checkpoint 350),12 steps lost; nothing restarted it,same\nManual resume to done,337 s,341 s\nvLLM start to ready,34 s,44 s\nKubernetes training pod Running after apply,7 s,7 s\nTraining pod deleted to replacement Running,31 s (resumed from checkpoint-150),32 s\nServe Deployment apply to answering,79 s,78 s\nServe pod deleted to answering,77 s,77 s"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "left",
+      "wrapText": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "md"
+   },
+   "id": 19,
+   "gridPos": {
+    "x": 0,
+    "y": 47,
+    "w": 24,
+    "h": 8
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "GPU busy, equal measurement window (percent)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Path,Percent\nTraditional,90.5\nKubernetes,89.1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 20,
+   "gridPos": {
+    "x": 0,
+    "y": 62,
+    "w": 6,
+    "h": 7
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "Serving throughput (tokens per second)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Path,Tokens per second\nTraditional,1774\nKubernetes,1773"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 21,
+   "gridPos": {
+    "x": 6,
+    "y": 62,
+    "w": 6,
+    "h": 7
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "First-time setup (minutes, sudo install excluded)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Path,Minutes\nTraditional,13.3\nKubernetes,27.8"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "m",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 22,
+   "gridPos": {
+    "x": 12,
+    "y": 62,
+    "w": 6,
+    "h": 7
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "Fine-tune run time (seconds)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Path,Seconds\nTraditional,529\nKubernetes,529"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 23,
+   "gridPos": {
+    "x": 18,
+    "y": 62,
+    "w": 6,
+    "h": 7
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "GPU busy, same traffic per model (percent)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Setup,Percent\n1 copy alone,38\n6 copies sharing,93"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 24,
+   "gridPos": {
+    "x": 0,
+    "y": 69,
+    "w": 8,
+    "h": 7
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "Same traffic: mean answer time (ms)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Setup,Milliseconds\n1 copy alone,81\n6 copies sharing,396"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 25,
+   "gridPos": {
+    "x": 8,
+    "y": 69,
+    "w": 8,
+    "h": 7
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "Heavy load: total tokens per second",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Setup,Tokens per second\n1 copy,12814\n6 copies sharing,2474"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 85
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "orientation": "horizontal",
+    "showValue": "always",
+    "xTickLabelRotation": 0,
+    "legend": {
+     "showLegend": false
+    },
+    "barWidth": 0.7
+   },
+   "id": 26,
+   "gridPos": {
+    "x": 16,
+    "y": 69,
+    "w": 8,
+    "h": 7
+   }
+  },
+  {
+   "type": "table",
+   "title": "GPU busy as traffic grows (SmolLM2-135M, 30 s per level, single runs)",
+   "datasource": {
+    "type": "grafana-testdata-datasource",
+    "uid": "testdata"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-testdata-datasource",
+      "uid": "testdata"
+     },
+     "scenarioId": "csv_content",
+     "csvContent": "Traffic per model,One copy GPU busy,One copy req/s,One copy mean,Six sharing GPU busy,Six sharing total req/s,Six sharing mean\nLight (1 client per model; pause 0.5 s),14%,1.7,81 ms,49 to 71% (3 runs),8.2 to 8.4,214 ms\nModerate (1 client per model; pause 0.1 s),38%,5.3,81 ms,93%,11.9,396 ms\nBusy (2 clients per model; pause 0.1 s),67%,10.3,88 ms,93%,19.0,522 ms\nSaturated (4 clients per model; no pause),92%,40.5,94 ms,93%,41.9,562 ms"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "left",
+      "wrapText": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "md"
+   },
+   "id": 27,
+   "gridPos": {
+    "x": 0,
+    "y": 76,
+    "w": 24,
+    "h": 8
+   }
+  },
+  {
+   "type": "text",
+   "title": "Honest notes",
+   "options": {
+    "mode": "markdown",
+    "content": "\n- **Sharing result:** at the same traffic per model, GPU busy went from 38% (one copy alone) to 93% (six sharing) and mean answer time from 81 ms to 396 ms. GPU busy is DCGM utilization, not useful work: at saturation one copy alone delivers about the same total requests per second as six sharing (40.5 vs 41.9), so sharing adds room for several models, not throughput.\n- **Heavy load result:** six copies delivered about 5x less total throughput than one copy, because one tiny server already fills the card. Sharing helps when many models each get light traffic, not when one model is saturated.\n- **Equal speed:** utilization, throughput and training time did not differ between the two paths. Do not read the first-time setup bar as a Kubernetes win: it is the one-time cost.\n- **Recovery times** are from pod logs and polling (about +/- 3 s). Not tested: Growing, Moving, MIG, the Operator installing the driver or toolkit.\n- Source: `results-ubuntu-4070.md` in the repo, branch `ubuntu-4070`.\n"
+   },
+   "id": 28,
+   "gridPos": {
+    "x": 0,
+    "y": 84,
+    "w": 24,
+    "h": 6
+   }
+  }
+ ],
+ "templating": {
+  "list": []
+ },
+ "annotations": {
+  "list": []
+ }
+}

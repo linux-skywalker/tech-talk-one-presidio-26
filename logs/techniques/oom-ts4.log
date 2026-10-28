@@ -1,0 +1,92 @@
+Using the latest cached version of the dataset since tatsu-lab/alpaca couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'default' at /hf/datasets/tatsu-lab___alpaca/default/0.0.0/dce01c9b08f87459cf36a430d809084718273017 (last modified on Thu Oct 22 20:27:13 2026).
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:23,  4.03it/s]Loading weights:  15%|█▌        | 51/338 [00:00<00:01, 180.52it/s]Loading weights:  26%|██▌       | 87/338 [00:00<00:01, 236.33it/s]Loading weights:  37%|███▋      | 124/338 [00:00<00:00, 272.71it/s]Loading weights:  48%|████▊     | 161/338 [00:00<00:00, 296.71it/s]Loading weights:  58%|█████▊    | 196/338 [00:00<00:00, 309.73it/s]Loading weights:  69%|██████▉   | 233/338 [00:00<00:00, 323.04it/s]Loading weights:  79%|███████▉  | 267/338 [00:00<00:00, 320.11it/s]Loading weights:  90%|█████████ | 305/338 [00:01<00:00, 335.29it/s]Loading weights: 100%|██████████| 338/338 [00:01<00:00, 290.17it/s]
+Tokenizing train dataset:   0%|          | 0/800 [00:00<?, ? examples/s]Tokenizing train dataset:  69%|██████▉   | 553/800 [00:00<00:00, 5500.04 examples/s]Tokenizing train dataset: 100%|██████████| 800/800 [00:00<00:00, 5262.52 examples/s]
+Building labels for train dataset:   0%|          | 0/800 [00:00<?, ? examples/s]Building labels for train dataset: 100%|██████████| 800/800 [00:00<00:00, 31771.12 examples/s]
+Truncating train dataset:   0%|          | 0/800 [00:00<?, ? examples/s]Truncating train dataset: 100%|██████████| 800/800 [00:00<00:00, 41680.97 examples/s]
+Dropping fully masked examples from train dataset:   0%|          | 0/800 [00:00<?, ? examples/s]Dropping fully masked examples from train dataset: 100%|██████████| 800/800 [00:00<00:00, 188455.11 examples/s]
+[train] resume_from_checkpoint=None
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None}.
+  0%|          | 0/100 [00:00<?, ?it/s][W1022 22:41:27.103243353 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 467664896 bytes (free: 458293248, total: 12449021952).
+[W1022 22:41:27.106653248 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 79691776 bytes (free: 47251456, total: 12449021952).
+[W1022 22:41:27.106690198 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 79691776 bytes (free: 47251456, total: 12449021952).
+Traceback (most recent call last):
+  File "/app/train.py", line 39, in <module>
+    trainer.train(resume_from_checkpoint=resume)
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 1520, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 1602, in _inner_training_loop
+    self._run_epoch(
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 1842, in _run_epoch
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/trl/trainer/sft_trainer.py", line 1937, in training_step
+    return super().training_step(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 2014, in training_step
+    loss = self.compute_loss(model, inputs, num_items_in_batch=num_items_in_batch)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/trl/trainer/sft_trainer.py", line 1835, in compute_loss
+    (loss, outputs) = super().compute_loss(
+                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 2088, in compute_loss
+    outputs = model(**inputs)
+              ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/accelerate/utils/operations.py", line 943, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/accelerate/utils/operations.py", line 931, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/peft/peft_model.py", line 2120, in forward
+    return self.base_model(
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/peft/tuners/tuners_utils.py", line 359, in forward
+    return self.model(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/trl/trainer/sft_trainer.py", line 330, in _chunked_ce_forward
+    loss, num_correct_tokens, entropy_sum, num_valid_tokens = _chunked_cross_entropy_loss(
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/trl/trainer/sft_trainer.py", line 212, in _chunked_cross_entropy_loss
+    chunk_loss, chunk_correct, chunk_entropy = torch.utils.checkpoint.checkpoint(
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1446, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 522, in checkpoint
+    gen.throw(e)
+  File "/usr/local/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1706, in _checkpoint_without_reentrant_generator
+    yield
+  File "/usr/local/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 519, in checkpoint
+    ret = function(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/trl/trainer/sft_trainer.py", line 106, in _chunk
+    logits = (h @ w.to(h.dtype).t()).float()
+              ~~^~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 76.00 MiB. GPU 0 has a total capacity of 11.59 GiB of which 45.06 MiB is free. Including non-PyTorch memory, this process has 6.64 GiB memory in use. Of the allocated memory 6.42 GiB is allocated by PyTorch, and 38.81 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+  0%|          | 0/100 [00:01<?, ?it/s]

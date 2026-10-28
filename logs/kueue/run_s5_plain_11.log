@@ -1,0 +1,88 @@
+=== s5 / plain / run 11 (015607-s5-plain-11) ===
+  [01:56:19 +150s] jobs done 0, failed 0 of 6; Terminating=1  GPU busy 100 %, mem 5723 MiB, power 150.93 W, temp 59 C
+  [01:56:42 +  0s] submitted serve (team a, 1 units, priority inference)
+  [01:56:43 +174s] jobs done 0, failed 0 of 6; Running=1  GPU busy 22 %, mem 296 MiB, power 48.74 W, temp 52 C
+  [01:57:08 +199s] jobs done 0, failed 0 of 6; Running=1  GPU busy 22 %, mem 3788 MiB, power 39.64 W, temp 48 C
+  [01:57:33 +224s] jobs done 0, failed 0 of 6; Running=1  GPU busy 21 %, mem 4836 MiB, power 98.50 W, temp 48 C
+  [01:57:41 +  0s] submitted a1 (trainm, team a, 1 units)
+  [01:57:41 +  0s] submitted a2 (trains, team a, 1 units)
+  [01:57:41 +  0s] submitted a3 (trainm, team a, 1 units)
+  [01:57:41 +  0s] submitted b1 (trains, team b, 1 units)
+  [01:57:41 +  0s] submitted b2 (trainm, team b, 1 units)
+  [01:57:41 +  0s] submitted b3 (trains, team b, 1 units)
+  [01:57:58 +249s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 4831 MiB, power 111.46 W, temp 54 C
+  [01:58:05 + 24s] jobs done 0, failed 0 of 6; Running=1  GPU busy 64 %, mem 4853 MiB, power 104.26 W, temp 55 C
+  [01:58:23 +274s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7333 MiB, power 137.97 W, temp 56 C
+  [01:58:31 + 50s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7365 MiB, power 141.65 W, temp 57 C
+  [01:58:49 +300s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7349 MiB, power 141.38 W, temp 57 C
+  [01:58:56 + 75s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7349 MiB, power 140.80 W, temp 58 C
+  [01:59:13 +324s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7387 MiB, power 141.93 W, temp 59 C
+  [01:59:21 +100s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7355 MiB, power 142.82 W, temp 59 C
+  [01:59:39 +350s] jobs done 0, failed 0 of 6; Running=1  GPU busy 100 %, mem 7327 MiB, power 140.93 W, temp 60 C
+  [01:59:46 +125s] jobs done 0, failed 4 of 6; Running=1  GPU busy 100 %, mem 7349 MiB, power 144.52 W, temp 60 C
+  scenario                         s5
+  arm                              plain
+  rep                              11
+  duration_s                       131
+  queue_wait_s                     {'serve': 1, 'a1': 0, 'a2': 0, 'a3': 0, 'b1': 0, 'b2': 0, 'b3': 1}
+  wait_train_median_s              0
+  wait_train_max_s                 1
+  wait_team_A_max_s                0
+  wait_team_B_max_s                1
+  jobs_total                       6
+  jobs_done                        2
+  jobs_failed                      4
+  makespan_s                       129
+  jobs_per_hour                    55.8
+  pods_failed                      18
+  pods_with_oom                    32
+  restarts_serve                   0
+  preempted_workloads              []
+  evictions                        0
+  gpu_util_avg                     95
+  gpu_mem_max_mib                  11839
+  dcgm_avg_util                    None
+  waiting_job_seconds              258
+  waiting_while_mem_below_9GB_s    258
+  waiting_while_util_below_50_s    0
+  unit_seconds_A                   971
+  unit_seconds_B                   305
+  share_A_pct                      76
+  probe_ok                         87
+  probe_err                        0
+  ttft_p50_s                       0.045
+  ttft_p95_s                       0.076
+  latency_p95_s                    1.348
+  scenario                         s5
+  arm                              plain
+  rep                              11
+  duration_s                       131
+  queue_wait_s                     {'serve': 1, 'a1': 0, 'a2': 0, 'a3': 0, 'b1': 0, 'b2': 0, 'b3': 1}
+  wait_train_median_s              0
+  wait_train_max_s                 1
+  wait_team_A_max_s                0
+  wait_team_B_max_s                1
+  jobs_total                       6
+  jobs_done                        2
+  jobs_failed                      4
+  makespan_s                       129
+  jobs_per_hour                    55.8
+  pods_failed                      18
+  pods_with_oom                    35
+  restarts_serve                   0
+  preempted_workloads              []
+  evictions                        0
+  gpu_util_avg                     95
+  gpu_mem_max_mib                  11839
+  dcgm_avg_util                    None
+  waiting_job_seconds              258
+  waiting_while_mem_below_9GB_s    258
+  waiting_while_util_below_50_s    0
+  unit_seconds_A                   971
+  unit_seconds_B                   305
+  share_A_pct                      76
+  probe_ok                         87
+  probe_err                        0
+  ttft_p50_s                       0.045
+  ttft_p95_s                       0.076
+  latency_p95_s                    1.348

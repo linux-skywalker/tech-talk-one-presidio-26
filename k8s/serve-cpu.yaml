@@ -1,0 +1,48 @@
+# The GGUF file (bartowski/SmolLM2-135M-Instruct-GGUF Q8_0) is copied into each VM at /opt/models by scripts/demo/vm-grow.sh, so no download at pod start.
+# CPU-only copies of the smallest model (SmolLM2-135M, Q8_0 GGUF via llama.cpp) for the Growing demo: one pod per VM worker, no GPU.
+# Scale with: kubectl scale deployment/serve-cpu --replicas=N   (one pod per node, anti-affinity). NodePort 30100.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serve-cpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: serve-cpu}
+  template:
+    metadata:
+      labels: {app: serve-cpu}
+    spec:
+      nodeSelector: {role: cpu-worker}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels: {app: serve-cpu}
+            topologyKey: kubernetes.io/hostname
+      volumes:
+      - name: models
+        hostPath: {path: /opt/models}
+      containers:
+      - name: llama
+        image: ghcr.io/ggml-org/llama.cpp:server
+        args: ["-m", "/models/SmolLM2-135M-Instruct-Q8_0.gguf", "--host", "0.0.0.0", "--port", "8080", "-t", "2", "-c", "1024"]
+        volumeMounts:
+        - {name: models, mountPath: /models, readOnly: true}
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet: {path: /health, port: 8080}
+          periodSeconds: 5
+        resources:
+          requests: {cpu: "1500m", memory: 1Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-cpu
+spec:
+  type: NodePort
+  selector: {app: serve-cpu}
+  ports:
+  - {port: 8080, targetPort: 8080, nodePort: 30100}

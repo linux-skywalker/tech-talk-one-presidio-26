@@ -1,0 +1,8 @@
+memtest ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4)
+-- mem-steady
+steady sees free=10.8 total=11.6 GiB
+steady holds 3 GiB
+steady could NOT grow by 2 GiB: OutOfMemoryError
+-- mem-greedy
+greedy sees free=10.9 total=11.6 GiB
+greedy stopped at 7 GiB: OutOfMemoryError

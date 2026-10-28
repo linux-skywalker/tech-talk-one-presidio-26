@@ -1,0 +1,63 @@
+# DRA consumable capacity on the single RTX 4070: independent claims each request a slice of the device memory (needs the driver feature gate ConsumableShares and consumableShares=memory).
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-3gi}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 3Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-5gi}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 5Gi}}
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: gpu-6gi}
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          capacity: {requests: {memory: 6Gi}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: cap-3}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 45"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimTemplateName: gpu-3gi}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: cap-5}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 45"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimTemplateName: gpu-5gi}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: cap-6}
+spec:
+  restartPolicy: Never
+  containers:
+  - {name: c, image: "localhost:5000/gpu-train:v1", command: ["sh","-c","nvidia-smi -L; sleep 45"], resources: {claims: [{name: g}]}}
+  resourceClaims: [{name: g, resourceClaimTemplateName: gpu-6gi}]

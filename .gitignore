@@ -1,0 +1,17 @@
+.venv*/
+outputs/
+__pycache__/
+logs/*.log
+logs/*.pid
+logs/*_rc
+logs/*_start
+logs/*_ts
+logs/*_epoch
+backups/
+
+# screen recordings for the demo videos (large)
+demo-vids/
+
+# company deck and backup files, not part of the repo
+*.pptx
+*.bak

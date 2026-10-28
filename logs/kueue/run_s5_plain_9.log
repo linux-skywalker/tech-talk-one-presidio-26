@@ -1,0 +1,85 @@
+=== s5 / plain / run 9 (011401-s5-plain-9) ===
+Error from server (InternalError): Internal error occurred: failed calling webhook "vclusterqueue.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/validate-kueue-x-k8s-io-v1beta2-clusterqueue?timeout=10s": no endpoints available for service "kueue-webhook-service"
+Error from server (InternalError): Internal error occurred: failed calling webhook "vclusterqueue.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/validate-kueue-x-k8s-io-v1beta2-clusterqueue?timeout=10s": no endpoints available for service "kueue-webhook-service"
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mdeployment.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-apps-v1-deployment?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:14:05 +  0s] submitted serve (team a, 1 units, priority inference)
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mjob.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-batch-v1-job?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:18:17 +  0s] submitted a1 (trainm, team a, 1 units)
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mjob.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-batch-v1-job?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:18:17 +  0s] submitted a2 (trains, team a, 1 units)
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mjob.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-batch-v1-job?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:18:17 +  0s] submitted a3 (trainm, team a, 1 units)
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mjob.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-batch-v1-job?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:18:17 +  0s] submitted b1 (trains, team b, 1 units)
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mjob.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-batch-v1-job?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:18:17 +  0s] submitted b2 (trainm, team b, 1 units)
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mjob.kb.io": failed to call webhook: Post "https://kueue-webhook-service.kueue-system.svc:443/mutate-batch-v1-job?timeout=10s": no endpoints available for service "kueue-webhook-service"
+  [01:18:17 +  0s] submitted b3 (trains, team b, 1 units)
+  [01:18:41 + 24s] jobs done 0, failed 0 of 6;  GPU busy 33 %, mem 329 MiB, power 49.42 W, temp 41 C
+  [01:19:05 + 48s] jobs done 0, failed 0 of 6;  GPU busy 24 %, mem 329 MiB, power 49.08 W, temp 41 C
+  [01:19:30 + 73s] jobs done 0, failed 0 of 6;  GPU busy 8 %, mem 361 MiB, power 48.79 W, temp 42 C
+  [01:19:55 + 98s] jobs done 0, failed 0 of 6;  GPU busy 33 %, mem 329 MiB, power 48.93 W, temp 42 C
+  [01:20:19 +122s] jobs done 0, failed 0 of 6;  GPU busy 38 %, mem 329 MiB, power 49.67 W, temp 42 C
+  [01:20:44 +147s] jobs done 0, failed 0 of 6;  GPU busy 20 %, mem 329 MiB, power 40.03 W, temp 41 C
+  [01:21:09 +172s] jobs done 0, failed 0 of 6;  GPU busy 35 %, mem 259 MiB, power 37.64 W, temp 41 C
+  [01:21:33 +196s] jobs done 0, failed 0 of 6;  GPU busy 38 %, mem 292 MiB, power 32.75 W, temp 40 C
+  [01:21:58 +221s] jobs done 0, failed 0 of 6;  GPU busy 23 %, mem 289 MiB, power 29.56 W, temp 40 C
+  [01:22:22 +245s] jobs done 0, failed 0 of 6;  GPU busy 31 %, mem 257 MiB, power 47.33 W, temp 40 C
+  [01:22:47 +270s] jobs done 0, failed 0 of 6;  GPU busy 33 %, mem 257 MiB, power 28.37 W, temp 40 C
+  [01:23:11 +294s] jobs done 0, failed 0 of 6;  GPU busy 31 %, mem 257 MiB, power 28.94 W, temp 40 C
+  [01:23:36 +319s] jobs done 0, failed 0 of 6;  GPU busy 32 %, mem 273 MiB, power 37.88 W, temp 40 C
+  [01:24:00 +343s] jobs done 0, failed 0 of 6;  GPU busy 38 %, mem 257 MiB, power 36.46 W, temp 40 C
+  [01:24:25 +368s] jobs done 0, failed 0 of 6;  GPU busy 76 %, mem 257 MiB, power 25.92 W, temp 40 C
+  [01:24:49 +392s] jobs done 0, failed 0 of 6;  GPU busy 28 %, mem 338 MiB, power 35.32 W, temp 40 C
+  [01:25:14 +417s] jobs done 0, failed 0 of 6;  GPU busy 49 %, mem 306 MiB, power 49.61 W, temp 41 C
+  [01:25:39 +442s] jobs done 0, failed 0 of 6;  GPU busy 29 %, mem 306 MiB, power 37.40 W, temp 41 C
+  [01:26:03 +466s] jobs done 0, failed 0 of 6;  GPU busy 30 %, mem 306 MiB, power 48.90 W, temp 41 C
+  [01:26:28 +491s] jobs done 0, failed 0 of 6;  GPU busy 32 %, mem 322 MiB, power 26.59 W, temp 39 C
+  [01:26:52 +515s] jobs done 0, failed 0 of 6;  GPU busy 45 %, mem 322 MiB, power 51.50 W, temp 41 C
+  [01:27:17 +540s] jobs done 0, failed 0 of 6;  GPU busy 48 %, mem 306 MiB, power 51.49 W, temp 42 C
+  [01:27:42 +565s] jobs done 0, failed 0 of 6;  GPU busy 43 %, mem 306 MiB, power 51.66 W, temp 42 C
+  [01:28:06 +589s] jobs done 0, failed 0 of 6;  GPU busy 53 %, mem 306 MiB, power 51.63 W, temp 42 C
+  [01:28:31 +614s] jobs done 0, failed 0 of 6;  GPU busy 54 %, mem 306 MiB, power 51.78 W, temp 43 C
+  [01:28:56 +639s] jobs done 0, failed 0 of 6;  GPU busy 43 %, mem 306 MiB, power 52.01 W, temp 43 C
+  [01:29:21 +664s] jobs done 0, failed 0 of 6;  GPU busy 49 %, mem 306 MiB, power 51.65 W, temp 43 C
+  [01:29:45 +688s] jobs done 0, failed 0 of 6;  GPU busy 54 %, mem 306 MiB, power 51.81 W, temp 43 C
+  [01:30:10 +713s] jobs done 0, failed 0 of 6;  GPU busy 41 %, mem 306 MiB, power 51.68 W, temp 43 C
+  [01:30:35 +738s] jobs done 0, failed 0 of 6;  GPU busy 45 %, mem 306 MiB, power 51.89 W, temp 43 C
+  [01:30:59 +762s] jobs done 0, failed 0 of 6;  GPU busy 39 %, mem 468 MiB, power 51.49 W, temp 43 C
+  [01:31:24 +787s] jobs done 0, failed 0 of 6;  GPU busy 22 %, mem 297 MiB, power 26.27 W, temp 41 C
+  [01:31:49 +812s] jobs done 0, failed 0 of 6; ContainerCreating=1  GPU busy 34 %, mem 296 MiB, power 26.35 W, temp 41 C
+  [01:32:13 +836s] jobs done 0, failed 0 of 6; Running=1  GPU busy 69 %, mem 296 MiB, power 25.51 W, temp 40 C
+  [01:32:38 +861s] jobs done 0, failed 0 of 6; Running=1  GPU busy 23 %, mem 4944 MiB, power 38.59 W, temp 41 C
+  scenario                         s5
+  arm                              plain
+  rep                              9
+  duration_s                       68
+  queue_wait_s                     {'serve': None}
+  wait_train_median_s              None
+  wait_train_max_s                 None
+  wait_team_A_max_s                None
+  wait_team_B_max_s                None
+  jobs_total                       0
+  jobs_done                        0
+  jobs_failed                      0
+  makespan_s                       None
+  jobs_per_hour                    0
+  pods_failed                      0
+  pods_with_oom                    0
+  restarts_serve                   0
+  preempted_workloads              []
+  evictions                        0
+  gpu_util_avg                     35
+  gpu_mem_max_mib                  4998
+  dcgm_avg_util                    None
+  waiting_job_seconds              70
+  waiting_while_mem_below_9GB_s    70
+  waiting_while_util_below_50_s    56
+  unit_seconds_A                   130
+  unit_seconds_B                   0
+  share_A_pct                      100
+  probe_ok                         0
+  probe_err                        0
+  ttft_p50_s                       None
+  ttft_p95_s                       None
+  latency_p95_s                    None

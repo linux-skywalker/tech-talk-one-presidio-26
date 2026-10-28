@@ -1,0 +1,24 @@
+# One-node EKS cluster with a single H100 (p5.4xlarge) for the MIG session. UNTESTED.
+# Replace REGION and AZ (the zone where p5.4xlarge is offered, see k8s/eks/MIG-SESSION.md). Use: eksctl create cluster -f k8s/eks/cluster.yaml
+# EKS needs a cluster spanning two zones, but the GPU node group is pinned to one zone because EBS volumes live in one zone.
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: gpu-talk
+  region: REGION
+iam:
+  withOIDC: true
+addons:
+- name: aws-ebs-csi-driver
+  wellKnownPolicies:
+    ebsCSIController: true
+managedNodeGroups:
+- name: gpu
+  instanceType: p5.4xlarge
+  amiFamily: AmazonLinux2023        # UNVERIFIED: check that eksctl selects the NVIDIA accelerated AMI for this instance type (see MIG-SESSION.md step 1)
+  availabilityZones: ["AZ"]
+  desiredCapacity: 1
+  minSize: 0
+  maxSize: 1
+  volumeSize: 200
+  labels: {role: gpu}

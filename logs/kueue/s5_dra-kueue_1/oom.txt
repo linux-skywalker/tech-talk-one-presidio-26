@@ -1,0 +1,7 @@
+team-a pod/a1-l86mm 0
+team-a pod/a2-42flw 0
+team-a pod/a3-hv6h8 0
+team-a pod/serve-74bb8968b9-m2gjt 0
+team-b pod/b1-g87jm 0
+team-b pod/b2-ft6x5 0
+team-b pod/b3-5dv4z 0

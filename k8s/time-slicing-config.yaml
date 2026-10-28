@@ -1,0 +1,16 @@
+# Advertise 1 physical GPU as 4 schedulable nvidia.com/gpu. No memory isolation: pods share VRAM and time.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: time-slicing-config
+  namespace: gpu-operator
+data:
+  any: |-
+    version: v1
+    flags:
+      migStrategy: none
+    sharing:
+      timeSlicing:
+        resources:
+        - name: nvidia.com/gpu
+          replicas: 4

@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train-share
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: {app: train-share}
+    spec:
+      restartPolicy: Never
+      runtimeClassName: nvidia
+      containers:
+      - name: train-share
+        image: localhost:5000/gpu-train:v1
+        args: ["--out", "/work/outputs/share"]
+        env:
+        - {name: EPOCHS, value: "1"}
+        - {name: BATCH, value: "1"}
+        volumeMounts:
+        - {name: work, mountPath: /work}
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: work
+        persistentVolumeClaim: {claimName: work}

@@ -1,0 +1,1317 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:42:34Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "48d5915d-3ecb-4b39-9806-5e192e8c9229"
+                },
+                "name": "job-a1-d785c",
+                "namespace": "team-a",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "a1",
+                        "uid": "48d5915d-3ecb-4b39-9806-5e192e8c9229"
+                    }
+                ],
+                "resourceVersion": "126336",
+                "uid": "5778470e-58db-474e-bcc0-7b4720b2bffb"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "a1",
+                                    "kq-job": "a1"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/a1"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "admission": {
+                    "clusterQueue": "cq-team-a",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:42:34Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:42:34Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:45:14Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:45:14Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:42:34Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "6e59f8e4-6fb6-4a77-9f69-febee6c2aab6"
+                },
+                "name": "job-a2-c984f",
+                "namespace": "team-a",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "a2",
+                        "uid": "6e59f8e4-6fb6-4a77-9f69-febee6c2aab6"
+                    }
+                ],
+                "resourceVersion": "126645",
+                "uid": "0f27631d-0827-4a9d-9c2e-89d0843bcd90"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "a2",
+                                    "kq-job": "a2"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/a2"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "accumulatedPastExecutionTimeSeconds": 27,
+                "admission": {
+                    "clusterQueue": "cq-team-a",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:45:15Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:45:15Z",
+                        "message": "Previously: Preempted to accommodate a workload (UID: df91076f-f832-4ea9-a470-17671ae34e76, JobUID: 92299323-9c3e-4b96-9c48-200fc9d95642) due to reclamation within the cohort; preemptor path: /gpu/cq-team-b; preemptee path: /gpu/cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "False",
+                        "type": "Evicted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:45:15Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:45:15Z",
+                        "message": "Previously: Preempted to accommodate a workload (UID: df91076f-f832-4ea9-a470-17671ae34e76, JobUID: 92299323-9c3e-4b96-9c48-200fc9d95642) due to reclamation within the cohort; preemptor path: /gpu/cq-team-b; preemptee path: /gpu/cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "False",
+                        "type": "Preempted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:43:01Z",
+                        "message": "Preempted to accommodate a workload (UID: df91076f-f832-4ea9-a470-17671ae34e76, JobUID: 92299323-9c3e-4b96-9c48-200fc9d95642) due to reclamation within the cohort; preemptor path: /gpu/cq-team-b; preemptee path: /gpu/cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "Preempted",
+                        "status": "True",
+                        "type": "Requeued"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:47:51Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:47:51Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ],
+                "schedulingStats": {
+                    "evictions": [
+                        {
+                            "count": 1,
+                            "reason": "Preempted",
+                            "underlyingCause": ""
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:42:34Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "6a24d8dd-ab7c-46cd-bf7c-dc342924fff6"
+                },
+                "name": "job-a3-a2301",
+                "namespace": "team-a",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "a3",
+                        "uid": "6a24d8dd-ab7c-46cd-bf7c-dc342924fff6"
+                    }
+                ],
+                "resourceVersion": "127097",
+                "uid": "f8767113-dcf3-455a-b1c8-0160f11140f6"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "a3",
+                                    "kq-job": "a3"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/a3"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "admission": {
+                    "clusterQueue": "cq-team-a",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:48:43Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:48:43Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:51:21Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:51:21Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:42:34Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "e3c1988b-f3b0-471c-bd18-e4b9eee0abd5"
+                },
+                "name": "job-a4-f4dab",
+                "namespace": "team-a",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "a4",
+                        "uid": "e3c1988b-f3b0-471c-bd18-e4b9eee0abd5"
+                    }
+                ],
+                "resourceVersion": "126978",
+                "uid": "deff5089-11f9-4ed5-88e3-d9c7d469622b"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "a4",
+                                    "kq-job": "a4"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/a4"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "admission": {
+                    "clusterQueue": "cq-team-a",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:47:52Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:47:52Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:50:28Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:50:28Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:42:35Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "ef111ee4-d0de-4e81-be53-a43319fa3a84"
+                },
+                "name": "job-a5-f8d93",
+                "namespace": "team-a",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "a5",
+                        "uid": "ef111ee4-d0de-4e81-be53-a43319fa3a84"
+                    }
+                ],
+                "resourceVersion": "127219",
+                "uid": "5a6bfdad-0ac5-4005-b238-ad89f3499371"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "a5",
+                                    "kq-job": "a5"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/a5"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "admission": {
+                    "clusterQueue": "cq-team-a",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:50:29Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-a",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:50:29Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:52:18Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:52:18Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:43:00Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "92299323-9c3e-4b96-9c48-200fc9d95642"
+                },
+                "name": "job-b1-774f8",
+                "namespace": "team-b",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "b1",
+                        "uid": "92299323-9c3e-4b96-9c48-200fc9d95642"
+                    }
+                ],
+                "resourceVersion": "126451",
+                "uid": "df91076f-f832-4ea9-a470-17671ae34e76"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "b1",
+                                    "kq-job": "b1"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/b1"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "admission": {
+                    "clusterQueue": "cq-team-b",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:43:01Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-b",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:43:01Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:46:06Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:46:06Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "kueue.x-k8s.io/v1beta2",
+            "kind": "Workload",
+            "metadata": {
+                "creationTimestamp": "2026-10-22T21:43:00Z",
+                "generation": 1,
+                "labels": {
+                    "kueue.x-k8s.io/job-uid": "f6c3ccdf-3178-4baf-b870-2eaba5369ee6"
+                },
+                "name": "job-b2-bb97f",
+                "namespace": "team-b",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "b2",
+                        "uid": "f6c3ccdf-3178-4baf-b870-2eaba5369ee6"
+                    }
+                ],
+                "resourceVersion": "126782",
+                "uid": "d02ef605-f743-4eba-a4ef-831ccf8fb915"
+            },
+            "spec": {
+                "active": true,
+                "podSets": [
+                    {
+                        "count": 1,
+                        "name": "main",
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "kq-train",
+                                    "batch.kubernetes.io/job-name": "b2",
+                                    "kq-job": "b2"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "args": [
+                                            "--out",
+                                            "/out/031230-s3-kueue-1/b2"
+                                        ],
+                                        "env": [
+                                            {
+                                                "name": "MODEL",
+                                                "value": "HuggingFaceTB/SmolLM2-135M-Instruct"
+                                            },
+                                            {
+                                                "name": "EPOCHS",
+                                                "value": "4"
+                                            },
+                                            {
+                                                "name": "BATCH",
+                                                "value": "48"
+                                            },
+                                            {
+                                                "name": "HF_HOME",
+                                                "value": "/hf"
+                                            },
+                                            {
+                                                "name": "HF_HUB_OFFLINE",
+                                                "value": "1"
+                                            },
+                                            {
+                                                "name": "HF_DATASETS_OFFLINE",
+                                                "value": "1"
+                                            }
+                                        ],
+                                        "image": "localhost:5000/gpu-train:v1",
+                                        "imagePullPolicy": "IfNotPresent",
+                                        "name": "train",
+                                        "resources": {
+                                            "limits": {
+                                                "nvidia.com/gpu": "3"
+                                            }
+                                        },
+                                        "terminationMessagePath": "/dev/termination-log",
+                                        "terminationMessagePolicy": "File",
+                                        "volumeMounts": [
+                                            {
+                                                "mountPath": "/hf",
+                                                "name": "hf"
+                                            },
+                                            {
+                                                "mountPath": "/out",
+                                                "name": "out"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "dnsPolicy": "ClusterFirst",
+                                "restartPolicy": "Never",
+                                "runtimeClassName": "nvidia",
+                                "schedulerName": "default-scheduler",
+                                "securityContext": {},
+                                "terminationGracePeriodSeconds": 30,
+                                "volumes": [
+                                    {
+                                        "hostPath": {
+                                            "path": "/home/linux-skywalker/.cache/huggingface",
+                                            "type": "Directory"
+                                        },
+                                        "name": "hf"
+                                    },
+                                    {
+                                        "hostPath": {
+                                            "path": "/tmp/kq-out",
+                                            "type": "DirectoryOrCreate"
+                                        },
+                                        "name": "out"
+                                    }
+                                ]
+                            }
+                        },
+                        "topologyRequest": {
+                            "podIndexLabel": "batch.kubernetes.io/job-completion-index"
+                        }
+                    }
+                ],
+                "priority": 100,
+                "priorityClassRef": {
+                    "group": "kueue.x-k8s.io",
+                    "kind": "WorkloadPriorityClass",
+                    "name": "batch"
+                },
+                "queueName": "gpu"
+            },
+            "status": {
+                "admission": {
+                    "clusterQueue": "cq-team-b",
+                    "podSetAssignments": [
+                        {
+                            "count": 1,
+                            "flavors": {
+                                "nvidia.com/gpu": "rtx4070"
+                            },
+                            "name": "main",
+                            "resourceUsage": {
+                                "nvidia.com/gpu": "3"
+                            }
+                        }
+                    ]
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-22T21:46:08Z",
+                        "message": "Quota reserved in ClusterQueue cq-team-b",
+                        "observedGeneration": 1,
+                        "reason": "QuotaReserved",
+                        "status": "True",
+                        "type": "QuotaReserved"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:46:08Z",
+                        "message": "The workload is admitted",
+                        "observedGeneration": 1,
+                        "reason": "Admitted",
+                        "status": "True",
+                        "type": "Admitted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:48:42Z",
+                        "message": "Reached expected number of succeeded pods",
+                        "observedGeneration": 1,
+                        "reason": "Succeeded",
+                        "status": "True",
+                        "type": "Finished"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-22T21:48:42Z",
+                        "message": "All pods reached readiness and the workload is running",
+                        "observedGeneration": 1,
+                        "reason": "Recovered",
+                        "status": "True",
+                        "type": "PodsReady"
+                    }
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

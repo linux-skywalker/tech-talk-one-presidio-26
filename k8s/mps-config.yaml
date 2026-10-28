@@ -1,0 +1,17 @@
+# Advertise 1 physical GPU as 2 schedulable nvidia.com/gpu using CUDA MPS (not MIG).
+# The device plugin gives each replica a memory limit and a thread share. Clients still share one fault domain.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mps-config
+  namespace: gpu-operator
+data:
+  any: |-
+    version: v1
+    flags:
+      migStrategy: none
+    sharing:
+      mps:
+        resources:
+        - name: nvidia.com/gpu
+          replicas: 2

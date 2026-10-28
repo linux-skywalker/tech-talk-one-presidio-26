@@ -1,0 +1,50 @@
+# Two teams, one cohort. Quota unit = one time-sliced GPU replica of the RTX 4070 (12 GB), about 1.5 GB each (8 units).
+# The unit is a memory-shaped convention, not isolation: a job asks for as many units as its measured GPU memory needs
+# (serve 3, medium training 3, small training 1). Each team owns 4 units and can borrow the other team's idle units.
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata: {name: rtx4070}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata: {name: cq-team-a}
+spec:
+  cohortName: gpu
+  namespaceSelector: {}
+  queueingStrategy: BestEffortFIFO
+  preemption:
+    withinClusterQueue: LowerPriority
+    reclaimWithinCohort: Any
+  resourceGroups:
+  - coveredResources: ["nvidia.com/gpu"]
+    flavors:
+    - name: rtx4070
+      resources:
+      - {name: nvidia.com/gpu, nominalQuota: 4}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata: {name: cq-team-b}
+spec:
+  cohortName: gpu
+  namespaceSelector: {}
+  queueingStrategy: BestEffortFIFO
+  preemption:
+    withinClusterQueue: LowerPriority
+    reclaimWithinCohort: Any
+  resourceGroups:
+  - coveredResources: ["nvidia.com/gpu"]
+    flavors:
+    - name: rtx4070
+      resources:
+      - {name: nvidia.com/gpu, nominalQuota: 4}
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: WorkloadPriorityClass
+metadata: {name: inference}
+value: 1000
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: WorkloadPriorityClass
+metadata: {name: batch}
+value: 100

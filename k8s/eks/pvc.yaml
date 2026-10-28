@@ -1,0 +1,11 @@
+# EBS-backed volume. Needs the aws-ebs-csi-driver EKS add-on and storageclass.yaml below.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: work
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 50Gi

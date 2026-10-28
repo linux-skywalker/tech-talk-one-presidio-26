@@ -1,0 +1,12 @@
+[04:31:42] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:31:42] === extra test memtest under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+memtest ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4)
+-- mem-steady
+steady sees free=10.8 total=11.6 GiB
+steady holds 3 GiB
+steady could NOT grow by 2 GiB: OutOfMemoryError
+-- mem-greedy
+greedy sees free=10.9 total=11.6 GiB
+greedy stopped at 7 GiB: OutOfMemoryError
+[04:34:14] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:34:14] === extra test memtest under ts4 done ===

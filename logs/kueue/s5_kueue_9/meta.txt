@@ -1,0 +1,4 @@
+t0 1793137794.290384863 s5 kueue 9
+njobs 6
+end 1793138325.678265923
+dcgm_avg_util n/a

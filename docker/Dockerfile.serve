@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir uv
+RUN uv pip install --system --no-cache vllm==0.31.0
+WORKDIR /app
+COPY scripts/serve.sh /app/serve.sh
+RUN chmod +x /app/serve.sh
+ENV HF_HOME=/work/hf-cache VLLM_USE_FLASHINFER_SAMPLER=0
+ENTRYPOINT ["/app/serve.sh"]

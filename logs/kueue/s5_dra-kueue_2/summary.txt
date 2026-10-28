@@ -1,0 +1,33 @@
+  scenario                         s5
+  arm                              dra-kueue
+  rep                              2
+  duration_s                       500
+  queue_wait_s                     {'serve': 1, 'a1': 248, 'a2': 2, 'a3': 373, 'b1': 0, 'b2': 120, 'b3': 1}
+  wait_train_median_s              120
+  wait_train_max_s                 373
+  wait_team_A_max_s                373
+  wait_team_B_max_s                120
+  jobs_total                       6
+  jobs_done                        6
+  jobs_failed                      0
+  makespan_s                       499
+  jobs_per_hour                    43.3
+  pods_failed                      0
+  pods_with_oom                    0
+  restarts_serve                   0
+  preempted_workloads              ['job-a1-b259c', 'job-a2-d3406']
+  evictions                        2
+  gpu_util_avg                     94
+  gpu_mem_max_mib                  9139
+  dcgm_avg_util                    92
+  waiting_job_seconds              738
+  waiting_while_mem_below_9GB_s    426
+  waiting_while_util_below_50_s    40
+  unit_seconds_A                   2505
+  unit_seconds_B                   601
+  share_A_pct                      81
+  probe_ok                         327
+  probe_err                        0
+  ttft_p50_s                       0.022
+  ttft_p95_s                       0.037
+  latency_p95_s                    1.651

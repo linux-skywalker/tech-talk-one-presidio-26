@@ -1,0 +1,77 @@
+# Three pods, one per team, on the one GPU. Each asks Kubernetes for '1 GPU' (a time-slicing slice, no size) and then really needs 3, 5 and 6 GiB.
+# Used for the 'without DRA' take. Start times are staggered by 3 s so the outcome is the same every run.
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: team-a-3gib, labels: {app: askdemo, need: "3"}}
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      n = 3
+      time.sleep(0)
+      print("needs 3 GiB", flush=True)
+      try:
+          x = torch.empty(n * 2**30, dtype=torch.uint8, device="cuda")
+          print("got 3 GiB", flush=True)
+          time.sleep(30)
+      except Exception as e:
+          print("OUT OF MEMORY", flush=True)
+          raise SystemExit(1)
+    resources: {limits: {nvidia.com/gpu: 1}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: team-b-5gib, labels: {app: askdemo, need: "5"}}
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      n = 5
+      time.sleep(3)
+      print("needs 5 GiB", flush=True)
+      try:
+          x = torch.empty(n * 2**30, dtype=torch.uint8, device="cuda")
+          print("got 5 GiB", flush=True)
+          time.sleep(30)
+      except Exception as e:
+          print("OUT OF MEMORY", flush=True)
+          raise SystemExit(1)
+    resources: {limits: {nvidia.com/gpu: 1}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: team-c-6gib, labels: {app: askdemo, need: "6"}}
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  containers:
+  - name: c
+    image: localhost:5000/gpu-train:v1
+    command: ["python", "-c"]
+    args:
+    - |
+      import torch, time
+      n = 6
+      time.sleep(6)
+      print("needs 6 GiB", flush=True)
+      try:
+          x = torch.empty(n * 2**30, dtype=torch.uint8, device="cuda")
+          print("got 6 GiB", flush=True)
+          time.sleep(30)
+      except Exception as e:
+          print("OUT OF MEMORY", flush=True)
+          raise SystemExit(1)
+    resources: {limits: {nvidia.com/gpu: 1}}

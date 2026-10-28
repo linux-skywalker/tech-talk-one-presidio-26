@@ -1,0 +1,4 @@
+t0 1793136410.812766306 s5 plain 9
+njobs 6
+end 1793136528.114039925
+dcgm_avg_util n/a

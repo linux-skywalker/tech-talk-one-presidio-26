@@ -1,0 +1,7 @@
+[03:32:20] === setting none: GPU NVIDIA GeForce RTX 4070, 8.9, 590.48.01 ===
+[03:32:40] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[03:33:18] none train-alone-short run 1: ok runtime 25.35s steps/s 1.972 GPU busy 61% mem 2498 MiB
+[03:33:55] none train-alone-short run 2: ok runtime 25.08s steps/s 1.994 GPU busy 62% mem 2498 MiB
+[03:35:22] none train-alone-long run 1: ok runtime 75.87s steps/s 0.474 GPU busy 85% mem 4728 MiB
+[03:36:50] none train-alone-long run 2: ok runtime 76.02s steps/s 0.474 GPU busy 84% mem 4744 MiB
+[03:38:25] none serve alone: ok 27 fail 0 p50 0.475s p95 0.483s ttft p50 0.012s p95 0.013s

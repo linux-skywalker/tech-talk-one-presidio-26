@@ -1,0 +1,50 @@
+# Ordered start (one pod at a time) because vLLM's memory check fails when copies start together. Many copies of the smallest model on one GPU: SmolLM2-135M x 6 (needs k8s/time-slicing-8.yaml). Scale with: kubectl scale statefulset/serve-tiny --replicas=N
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: serve-tiny
+spec:
+  serviceName: serve-tiny
+  podManagementPolicy: OrderedReady
+  replicas: 6
+  selector:
+    matchLabels: {app: serve-tiny}
+  template:
+    metadata:
+      labels: {app: serve-tiny}
+    spec:
+      runtimeClassName: nvidia
+      containers:
+      - name: vllm
+        image: localhost:5000/gpu-serve:v1
+        env:
+        - {name: MODEL, value: HuggingFaceTB/SmolLM2-135M-Instruct}
+        - {name: ADAPTER, value: /none}
+        - {name: GPU_UTIL, value: "0.1"}
+        volumeMounts:
+        - {name: work, mountPath: /work}
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          httpGet: {path: /v1/models, port: 8000}
+          periodSeconds: 5
+        startupProbe:
+          httpGet: {path: /v1/models, port: 8000}
+          periodSeconds: 5
+          failureThreshold: 60
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: work
+        persistentVolumeClaim: {claimName: work}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serve-tiny
+spec:
+  type: NodePort
+  selector: {app: serve-tiny}
+  ports:
+  - {port: 8000, targetPort: 8000, nodePort: 30082}

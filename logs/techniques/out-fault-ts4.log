@@ -1,0 +1,10 @@
+[04:20:52] sharing ts4 -> node advertises nvidia.com/gpu=4 strategy=time-slicing replicas=4
+[04:20:52] === extra test fault under ts4 (nvidia.com/gpu=4 strategy=time-slicing replicas=4) ===
+[04:21:19] fault ts4 run 1: killing job fa (container main process host pid 655137) with a forced delete (SIGKILL, no grace period)
+[04:21:24] fault ts4 run 1: process 655137 gone after kill (checked in /proc): yes
+[04:22:04] fault ts4 run 1: job fa (killed) -> unfinished; job fb -> ok, runtime 60.05s, 44 s after the kill; error in fb log: none
+[04:22:31] fault ts4 run 2: killing job fa (container main process host pid 657574) with a forced delete (SIGKILL, no grace period)
+[04:22:36] fault ts4 run 2: process 657574 gone after kill (checked in /proc): yes
+[04:23:16] fault ts4 run 2: job fa (killed) -> unfinished; job fb -> ok, runtime 59.9s, 44 s after the kill; error in fb log: none
+[04:23:43] sharing none -> node advertises nvidia.com/gpu=1 strategy=none replicas=1
+[04:23:43] === extra test fault under ts4 done ===

@@ -1,0 +1,7 @@
+DONE s5 plain 1 exit=0
+DONE s5 kueue 1 exit=0
+DONE s5 plain 2 exit=0
+DONE s5 kueue 2 exit=0
+DONE s5 plain 3 exit=0
+DONE s5 kueue 3 exit=0
+SWEEP-COMPLETE

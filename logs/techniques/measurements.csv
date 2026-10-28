@@ -1,0 +1,35 @@
+technique,setting,test,run,item,status,train_runtime_s,steps_per_s,samples_per_s,gpu_busy_avg,gpu_mem_max_mib,p50_total_s,p95_total_s,p50_ttft_s,p95_ttft_s,n_ok,n_fail,note
+none,nvidia.com/gpu=1 strategy=none replicas=1,train-alone-short,1,alone,ok,25.35,1.972,63.12,61,2498,,,,,,,
+none,nvidia.com/gpu=1 strategy=none replicas=1,train-alone-short,2,alone,ok,25.08,1.994,63.81,62,2498,,,,,,,
+none,nvidia.com/gpu=1 strategy=none replicas=1,train-alone-long,1,alone,ok,75.87,0.474,42.18,85,4728,,,,,,,
+none,nvidia.com/gpu=1 strategy=none replicas=1,train-alone-long,2,alone,ok,76.02,0.474,42.1,84,4744,,,,,,,
+none,nvidia.com/gpu=1 strategy=none replicas=1,serve-alone,1,server,ok,,,,,,0.475,0.483,0.012,0.013,27,0,
+none,nvidia.com/gpu=1 strategy=none replicas=1,serve+train,1,server+train,Pending,,,,,,,,,,,,training job cannot start next to the server:  Warning FailedScheduling 90s default-scheduler 0/1 nodes are available: 1 Insufficient nvidia.com/gpu. no new claims to deallocate; preemption: 0/1 nodes are available: 1 No preemption victims found 
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,pair,1,a,ok,48.36,1.034,33.08,81,4298,,,,,,,
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,pair,1,b,ok,48.47,1.032,33.01,81,4298,,,,,,,
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,pair,2,a,ok,48.55,1.03,32.95,79,4298,,,,,,,
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,pair,2,b,ok,48.65,1.028,32.89,79,4298,,,,,,,
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,serve-alone,1,server,ok,,,,,,0.475,0.485,0.012,0.013,26,0,
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,serve+train,1,server+train,ok,116,0.31,27.58,94,9198,1.057,1.071,0.022,0.023,85,0,restarts 0
+ts2,nvidia.com/gpu=2 strategy=time-slicing replicas=2,serve+train,2,server+train,ok,115.8,0.311,27.63,93,9198,1.058,1.072,0.022,0.023,85,0,restarts 0
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,pair,1,a,ok,48.5,1.031,32.99,81,4298,,,,,,,
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,pair,1,b,ok,48.59,1.029,32.93,81,4298,,,,,,,
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,pair,2,a,ok,49.34,1.013,32.42,78,4282,,,,,,,
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,pair,2,b,ok,49.23,1.016,32.5,78,4282,,,,,,,
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,serve-alone,1,server,ok,,,,,,0.474,0.475,0.012,0.014,27,0,
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,serve+train,1,server+train,ok,115.9,0.311,27.62,93,9182,1.056,1.071,0.021,0.023,85,0,restarts 0
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,serve+train,2,server+train,ok,115.9,0.311,27.62,93,9182,1.056,1.072,0.022,0.023,85,0,restarts 0
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,pair,1,a,ok,49.31,1.014,32.45,75,4149,,,,,,,
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,pair,1,b,ok,49.31,1.014,32.45,75,4149,,,,,,,
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,pair,2,a,ok,48.82,1.024,32.77,80,4165,,,,,,,
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,pair,2,b,ok,48.8,1.025,32.79,80,4165,,,,,,,
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,serve-alone,1,server,ok,,,,,,0.481,0.481,0.012,0.013,27,0,
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,serve+train,1,server+train,ok,117.8,0.306,27.17,93,9067,0.847,0.875,0.019,0.021,86,0,restarts 0
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,serve+train,2,server+train,ok,117.7,0.306,27.19,93,9067,0.847,0.873,0.019,0.021,86,0,restarts 0
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,oom-test,1,1.5B fine-tune next to 1.5B server,failed,,,,,11828,,,,,,,free before: 6851 MiB; OutOfMemoryError: CUDA out of memory. Tried to allocate 76.00 MiB. GPU 0 has a total capacity of 11.59 GiB of which 45.06 MiB is free. Including non-PyTorch memory, this process has 6.64 GiB memory in use. Of the allocated memory 6.42 GiB is allocated by PyTorch, and 38.81 MiB is reserved by PyTorch but unallocated. If reserved 
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,fault-kill-one-client,1,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,60.05,1.665,53.29,,,,,,,,,fb error: none
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,fault-kill-one-client,2,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,59.9,1.67,53.43,,,,,,,,,fb error: none
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,fault-kill-one-client,1,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,74.14,1.349,43.16,,,,,,,,,fb error: none
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,fault-kill-one-client,2,fa(killed)/fb,fa=killed fb=ok killed_ok=yes,74.04,1.351,43.22,,,,,,,,,fb error: none
+mps2,nvidia.com/gpu=2 strategy=mps replicas=2,memtest,1,steady/greedy pods,done,,,,,,,,,,,-- mem-steady;steady sees free=5.9 total=11.6 GiB;steady holds 3 GiB;steady GREW by 2 GiB: OK; greedy stopped at 5 GiB: OutOfMemoryError
+ts4,nvidia.com/gpu=4 strategy=time-slicing replicas=4,memtest,1,steady/greedy pods,done,,,,,,,,,,,-- mem-steady;steady sees free=10.8 total=11.6 GiB;steady holds 3 GiB;steady could NOT grow by 2 GiB: OutOfMemoryError; greedy stopped at 7 GiB: OutOfMemoryError

@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: {app: train}
+    spec:
+      restartPolicy: Never
+      runtimeClassName: nvidia
+      containers:
+      - name: train
+        image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/gpu-train:v1
+        args: ["--out", "/work/outputs/k8s"]
+        env:
+        - {name: EPOCHS, value: "9"}
+        - {name: BATCH, value: "4"}
+        volumeMounts:
+        - {name: work, mountPath: /work}
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: work
+        persistentVolumeClaim: {claimName: work}

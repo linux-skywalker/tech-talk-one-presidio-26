@@ -1,0 +1,8 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata: {name: one-gpu-startup}
+spec:
+  spec:
+    devices:
+      requests:
+      - {name: gpu, exactly: {deviceClassName: gpu.nvidia.com}}

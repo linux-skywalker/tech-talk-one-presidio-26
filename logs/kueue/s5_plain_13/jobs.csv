@@ -1,0 +1,7 @@
+scenario,arm,rep,job,team,kind,submit_s,admitted_s,start_s,finish_s,status,wait_to_start_s
+s5,plain,13,a1,A,trainm,0,,-2,179,ok,-2
+s5,plain,13,a2,A,trains,0,,-2,,failed,-2
+s5,plain,13,a3,A,trainm,0,,-2,,failed,-2
+s5,plain,13,b1,B,trains,0,,-1,,failed,-1
+s5,plain,13,b2,B,trainm,0,,-1,,failed,-1
+s5,plain,13,b3,B,trains,1,,-1,,failed,-1

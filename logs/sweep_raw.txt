@@ -1,0 +1,36 @@
+## L1 1 client/pod pause 0.5s
+pod 5:  40 requests  mean  224 ms  p95  440 ms
+pod 2:  41 requests  mean  207 ms  p95  423 ms
+pod 1:  41 requests  mean  207 ms  p95  407 ms
+pod 3:  41 requests  mean  214 ms  p95  425 ms
+pod 0:  41 requests  mean  216 ms  p95  431 ms
+pod 4:  41 requests  mean  218 ms  p95  423 ms
+## L2 1 client/pod pause 0.1s
+pod 1:  59 requests  mean  396 ms  p95  470 ms
+pod 3:  60 requests  mean  390 ms  p95  474 ms
+pod 2:  59 requests  mean  400 ms  p95  479 ms
+pod 5:  59 requests  mean  401 ms  p95  476 ms
+pod 4:  60 requests  mean  393 ms  p95  469 ms
+pod 0:  60 requests  mean  393 ms  p95  473 ms
+## L3 2 clients/pod pause 0.1s
+pod 5:  94 requests  mean  524 ms  p95  626 ms
+pod 1:  95 requests  mean  521 ms  p95  628 ms
+pod 2:  93 requests  mean  535 ms  p95  625 ms
+pod 3:  96 requests  mean  516 ms  p95  628 ms
+pod 0:  95 requests  mean  523 ms  p95  625 ms
+pod 4:  97 requests  mean  511 ms  p95  629 ms
+## L4 4 clients/pod no pause
+pod 3: 211 requests  mean  560 ms  p95  627 ms
+pod 5: 210 requests  mean  560 ms  p95  628 ms
+pod 4: 209 requests  mean  564 ms  p95  628 ms
+pod 2: 209 requests  mean  565 ms  p95  628 ms
+pod 1: 209 requests  mean  565 ms  p95  628 ms
+pod 0: 210 requests  mean  561 ms  p95  628 ms
+## ALONE ALONE L1 (1 client pause 0.5s)
+pod 0:  51 requests  mean   81 ms  p95   99 ms
+## ALONE ALONE L2 (1 client pause 0.1s)
+pod 0: 160 requests  mean   81 ms  p95   94 ms
+## ALONE ALONE L3 (2 clients pause 0.1s)
+pod 0: 310 requests  mean   88 ms  p95  105 ms
+## ALONE ALONE L4 (4 clients no pause)
+pod 0: 1214 requests  mean   94 ms  p95  107 ms

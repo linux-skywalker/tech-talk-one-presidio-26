@@ -1,0 +1,6 @@
+kube/1-sharing exit=0 393s
+kube/2-failures exit=0 168s
+kube/3-watching exit=0 88s
+kube/4-moving exit=0 0s
+DONE
+kube/3 rerun exit=0
