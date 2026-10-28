@@ -11,7 +11,7 @@ Proof of concept for the tech talk of the same name (India Exchange 2026, Presid
 
 https://github.com/user-attachments/assets/b2d6b8cd-3bdf-4615-9f7e-fa51db9bedfb
 
-Click the picture to play the video (about 2 minutes). Each demo runs the same workload without and with the technique, one terminal after the other.
+About 2 minutes. Each demo runs the same workload without and with the technique, one terminal after the other.
 
 ## What is in here
 
