@@ -19,7 +19,7 @@ Start with `FINAL-SUMMARY-techniques.md` (what ran, what failed, what can and ca
 - `scripts/` helpers, load tests, and the demo scripts (`scripts/demo/`, see its README). The live dashboards and record scripts for the before/after demos are in `scripts/demo/{kueue,mps,dra}/video/`.
 - `docker/` images for the serving and training workloads.
 - `logs/` raw run data behind every number in the result files.
-- `video/` the Remotion project that cuts the before/after terminal recordings into one demo video.
+- `video/` the Remotion project that cuts the before/after terminal recordings into one demo video. The finished video (about 2 minutes, 17 MB) is `video/final/all-demos.mp4`.
 
 ## Notes on the numbers
 
